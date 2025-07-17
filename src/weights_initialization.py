@@ -6,15 +6,17 @@ from numpy.random import PCG64
 from numpy.typing import NDArray
 
 from common.enums import WeightInitiailizationMethod
+from common.variable import Variable
 
 
 class WeightsInitializer(ABC):
 
     @abstractmethod
-    def init_weights(self, W: NDArray) -> tuple[NDArray, NDArray]:
+    def init_weights(self, X: Variable | NDArray, _out: int) -> NDArray:
         """
-        W: Weights matrix.
-        b: bias vector.
+        X: Variable | NDArray
+        _out: int
+        Return: NDArray
         """
         raise NotImplementedError("The init weights method has not been created.")
 
@@ -24,16 +26,39 @@ class RandomInitializer(WeightsInitializer):
     def __init__(self):
         self.random = np.random.Generator(PCG64())
 
-    def init_weights(self, W: NDArray) -> tuple[NDArray, NDArray]:
-        W = self.random.standard_normal(size=W.shape)
-        b = self.random.standard_normal(size=b.shape)
+    def init_weights(self, X: Variable | NDArray, _out: int) -> NDArray:
+        """
+        Returns a random initialization of Weight Matrix(W). If X has dimensions (B,m), then W has dimensions(m,_out)
 
-        return (W, b)
+        Where:
+            B = number of samples.
+            m = number of features (or number of units in previous hidden layer)
+            _out = number of units that will be returned from current layer.
+
+        ---------------------
+        X: Variable | NDArray
+        _out: int
+        Return: NDArray
+        """
+        if isinstance(X, Variable):
+            ind_var = X.value
+
+        else:
+            ind_var = X
+
+        return self.random.standard_normal(size=np.transpose(ind_var).shape)
 
 
 class ScaledInitializer(WeightsInitializer):
 
     def __init__(self, weight_init_method: WeightInitiailizationMethod):
+        """
+        Initializes Scaled Initializer instance.
+
+        --------------------------------
+        weight_init_method: [Xavier, He]
+            An enum of either Xaiver or He to represent the initialization method.
+        """
         self.random = np.random.Generator(PCG64())
 
         if not isinstance(self.initializer_method, WeightInitiailizationMethod):
@@ -43,16 +68,66 @@ class ScaledInitializer(WeightsInitializer):
 
         self.initializer_method = weight_init_method
 
-    def init_weights(self, W: NDArray) -> tuple[NDArray, NDArray]:
-        pass
+    def init_weights(self, X: Variable | NDArray, _out: int) -> NDArray:
+        """
+        Returns a scaled initialization using either Xavier or He initialization methods.
 
-    def xaiver_init_method(self, W: NDArray) -> NDArray:
+        If X has dimensions (B,m), then W has dimensions(m,_out)
+        Where:
+            B = number of samples.
+            m = number of features (or number of units in previous hidden layer)
+            _out = number of units that will be returned from current layer.
+
+        ---------------------
+        X: Variable | NDArray
+        _out: int
+        Return: NDArray
+        """
+
+        # Check for correct type
+        if isinstance(X, Variable):
+            X = X.value
+
+        elif isinstance(X, ndarray):
+            X = X
+
+        else:
+            raise TypeError(
+                f"Incorrect type of X, expected Variable or NDArray, got: {type(X)}"
+            )
+
+        # Select appropriate initialization method.
+        if self.initializer_method == WeightInitiailizationMethod.XAIVER:
+            return self.xaiver_init_method(X, _out)
+
+        elif self.initializer_method == WeightInitiailizationMethod.HE:
+            return self.he_init_method(X, _out)
+
+        else:
+            raise TypeError(
+                "Initialization method is missing or malformed. Please initialize object with correct initalization method"
+            )
+
+    def xaiver_init_method(self, X: NDArray, _out: int) -> NDArray:
         """
         The Xavier initialization method.
 
-        W: Weights Matrix: Shape(n, m)
-        Return: NDarray[]: Shape(n, m)
+        X: Input Matrix: Shape(B, m)
+        Return: NDarray: Shape(m, _out)
         """
 
-        _in: int = W.shape[0]  # Represent the # of units or features in previous layer.
-        self.random.normal(0, 1 / _in)
+        _in = X.shape[1]  # previous layer's units, or input features.
+
+        return self.random.normal(0, (1 / _in), size=(_in, _out))
+
+    def he_init_method(self, X: NDArray, _out: int) -> NDArray:
+        """
+        The Kaising He initialization method.
+
+        X: Input Matrix, Shape(B, m)
+        Return: NDArray: Shape(m, _out)
+        """
+
+        _in = X.shape[1]  # previous layer's units, or input features.
+
+        return self.random.normal(0, (2 / _in), size=(_in, _out))
