@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
+from common.enums import WeightInitiailizationMethod
 from numpy import ndarray
 from numpy.random import PCG64
 from numpy.typing import NDArray
 
-from common.enums import WeightInitiailizationMethod
-from common.variable import Variable
+from image_classifier.common.variable import Variable
 
 
 class WeightsInitializer(ABC):
@@ -105,8 +105,8 @@ class ScaledInitializer(WeightsInitializer):
             )
 
         # Select appropriate initialization method.
-        if self.initializer_method == WeightInitiailizationMethod.XAIVER:
-            return self.xaiver_init_method(X, _out)
+        if self.initializer_method == WeightInitiailizationMethod.XAVIER:
+            return self.xavier_init_method(X, _out)
 
         elif self.initializer_method == WeightInitiailizationMethod.HE:
             return self.he_init_method(X, _out)
@@ -116,7 +116,7 @@ class ScaledInitializer(WeightsInitializer):
                 "Initialization method is missing or malformed. Please initialize object with correct initalization method"
             )
 
-    def xaiver_init_method(self, X: NDArray, _out: int) -> NDArray:
+    def xavier_init_method(self, X: NDArray, _out: int) -> NDArray:
         """
         The Xavier initialization method.
 

@@ -3,42 +3,80 @@ Smoke test runner - for development only.
 Not part of production code.
 """
 
+import logging
+import subprocess
+
 import numpy as np
 from numpy.typing import NDArray
 
-from common.enums import WeightInitiailizationMethod as WeightInitMethod
-from common.variable import Variable
-from linear_layer import LinearLayer
-from neural_network import NeuralNetowrk
-from src.functionas.activation_functions import RELU, BCEWithLogits
-from weights_initialization import ScaledInitializer
+from image_classifier.common.enums import (
+    WeightInitiailizationMethod as WeightInitMethod,
+)
+from image_classifier.common.variable import Variable
+from image_classifier.functions.activiation import RELU
+from image_classifier.functions.loss import BCEWithLogits
+from image_classifier.layers import LinearLayer
+from image_classifier.layers.weights_initialization import ScaledInitializer
+from neural_network import NeuralNetwork
+
+# Configure Logging.
+logging.basicConfig(
+    level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+logger = logging.getLogger(__name__)
 
 
-def main(input: NDArray):
+def define_layers() -> list[tuple[LinearLayer, RELU | BCEWithLogits]]:
+    # Define Linear Layers, Acitivation Function, and Loss Function.
+    logger.info(
+        "Defining Linear Layers, Activiation Functions, and Loss Functions for neural network"
+    )
 
-    # Define layers
     nn_1 = LinearLayer(
         weight_init=ScaledInitializer(WeightInitMethod.HE),
-        activation_function=RELU(),
         u_out=128,
     )
 
     nn_2 = LinearLayer(
         weight_init=ScaledInitializer(WeightInitMethod.HE),
-        activation_function=RELU(),
         u_out=256,
     )
 
     nn_3 = LinearLayer(
-        weight_init=ScaledInitializer(WeightInitMethod.XAIVER),
-        activation_function=BCEWithLogits(),
+        weight_init=ScaledInitializer(WeightInitMethod.XAVIER),
         u_out=1,
     )
 
-    layers = [nn_1, nn_2, nn_3]
+    relu = RELU()  # Activation Function
+    loss_fn = BCEWithLogits()  # Loss Function
 
-    # Intialize model
-    model = NeuralNetowrk(layers)
+    logger.info("Neural network layers successfully created.")
 
-    # Forward Pass
-    model.forward()
+    # Combine all layers
+    return [(nn_1, relu), (nn_2, relu), (nn_3, loss_fn)]
+
+
+def get_data() -> None:
+    logger.info("Downloading MNIST Dataset")
+
+    try:
+        subprocess.run(["python", "scripts/load_data.py"], check=True)
+    except subprocess.CalledProcessError as e:
+        logger.error("Error when retrieving data...", exc_info=True)
+        raise
+
+    with open("data/mnist_raw/train-images-idx3-ubyte.gz", "rb") as file:
+        raw_data = file.read()
+
+    data = np.frombuffer(raw_data)
+    print(data)
+
+
+def main() -> None:
+    define_layers()
+    get_data()
+
+
+if __name__ == "__main__":
+    main()

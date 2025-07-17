@@ -2,9 +2,9 @@ import numpy as np
 from numpy.random import PCG64, Generator
 from numpy.typing import NDArray
 
-from src.activation_functions.relu import RELU
-from src.linear_layer import LinearLayer
-from src.weights_initialization import RandomInitializer
+from image_classifier.functions.activiation import RELU
+from image_classifier.layers.linear_layer import LinearLayer
+from image_classifier.layers.weights_initialization import RandomInitializer
 
 random_generator = Generator(PCG64())
 

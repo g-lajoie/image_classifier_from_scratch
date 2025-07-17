@@ -3,17 +3,10 @@ from abc import ABC, abstractmethod
 import numpy as np
 from numpy.typing import NDArray
 
-from common.variable import Variable
-from utils.type_helpers import to_ndarry, to_variable
+from image_classifier.common.variable import Variable
+from image_classifier.utils.type_helpers import to_ndarry, to_variable
 
-
-class LossFunction(ABC):
-    """
-    Interface for activaition class.
-    """
-
-    def function(self):
-        raise NotImplementedError("The function method has not been implemented.")
+from .base_loss_function import LossFunction
 
 
 class BCEWithLogits(LossFunction):

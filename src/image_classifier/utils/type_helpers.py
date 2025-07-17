@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.typing import NDArray
 
-from common.variable import Variable
+from image_classifier.common.variable import Variable, VariableType
 
 
 def to_ndarry(input: Variable | NDArray) -> NDArray:
@@ -18,7 +18,9 @@ def to_ndarry(input: Variable | NDArray) -> NDArray:
     raise TypeError(f"Expected object of type Variable or NDArray, got{type(input)}")
 
 
-def to_variable(input: Variable | NDArray, label: str) -> Variable:
+def to_variable(
+    input: Variable | NDArray, label: str, variable_type: VariableType
+) -> Variable:
     """
     Ensures that Variable is returned
     """
@@ -27,4 +29,4 @@ def to_variable(input: Variable | NDArray, label: str) -> Variable:
         return input
 
     if isinstance(input, np.ndarray):
-        return Variable(input, label=label)
+        return Variable(value=input, label=label, variable_type=variable_type)

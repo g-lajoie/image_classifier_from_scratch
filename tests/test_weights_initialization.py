@@ -3,8 +3,11 @@ import pytest
 from numpy.random import PCG64
 from numpy.typing import NDArray
 
-from common.enums import WeightInitiailizationMethod as InitMethod
-from src.weights_initialization import RandomInitializer, ScaledInitializer
+from image_classifier.common.enums import WeightInitiailizationMethod as InitMethod
+from image_classifier.layers.weights_initialization import (
+    RandomInitializer,
+    ScaledInitializer,
+)
 
 
 def test_init_with_valud_enum():

@@ -3,16 +3,9 @@ from abc import ABC, abstractmethod
 import numpy as np
 from numpy.typing import NDArray
 
-from common.variable import Variable
+from image_classifier.common.variable import Variable
 
-
-class ActivationFunction(ABC):
-    """
-    Interface for activaition class.
-    """
-
-    def function(self):
-        raise NotImplementedError("The function method has not been implemented.")
+from .base_activation_function import ActivationFunction
 
 
 class RELU(ActivationFunction):

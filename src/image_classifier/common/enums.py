@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class WeightInitiailizationMethod(Enum):
-    XAIVER = "xaiver"
+    XAVIER = "xaiver"
     HE = "he"
 
 

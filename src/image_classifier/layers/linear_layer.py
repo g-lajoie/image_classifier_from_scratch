@@ -2,11 +2,13 @@ from typing import Optional
 
 import numpy as np
 from numpy.typing import NDArray
-
-from common.variable import Variable
-from src.activation_functions.base_activation_function import ActivationFunction
-from src.weights_initialization import WeightsInitializer
 from utils.type_helpers import to_ndarry, to_variable
+
+from image_classifier.common.variable import Variable
+from image_classifier.functions.activiation.base_activation_function import (
+    ActivationFunction,
+)
+from image_classifier.layers.weights_initialization import WeightsInitializer
 
 
 class LinearLayer:
@@ -21,13 +23,11 @@ class LinearLayer:
 
     def __init__(
         self,
-        activation_function: ActivationFunction,
         weight_init: WeightsInitializer,
         u_out: int,
         *args,
         **kwargs,
     ):
-        self.activation_function = activation_function
         self.weights_init = weight_init
         self.u_out = u_out
 

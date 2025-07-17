@@ -93,3 +93,6 @@ Desktop.ini
 
 # Local settings (optional)
 local_settings.py
+
+# Data
+data/

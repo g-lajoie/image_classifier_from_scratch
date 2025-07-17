@@ -1,15 +1,23 @@
+from enum import Enum
+from typing import Callable, Iterable, Optional
+
 import numpy as np
 from numpy.typing import NDArray
+from pydantic import BaseModel
 
 
-class Variable:
+class VariableType(str, Enum):
 
-    def __init__(self, value: NDArray, label="", children=()):
-        self.value = value
-        self.label = label
-        self._backward = lambda: None
-        self.children = children
-        self.grad = 0.0
+    LAYER = "layer"
+    ACTIVATION = "activation"
+    LOSS = "loss"
 
-    def __repr__(self) -> str:
-        return self.label if self.label else f"Variable: {self.value}"
+
+class Variable(BaseModel):
+
+    value: NDArray
+    label: str
+    variable_type: VariableType
+    backward: Callable = lambda: None
+    children: Optional[Iterable] = None
+    grad: float = 0.0
