@@ -1,2 +1,11 @@
-[pytest]
-testpaths = tests
+[project]
+name = "image_classifer_from_scratch"
+version = "0.1.0"
+requires-python = ">3.13"
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.isort]
+profile = "black"

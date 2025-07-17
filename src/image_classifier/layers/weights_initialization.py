@@ -40,13 +40,21 @@ class RandomInitializer(WeightsInitializer):
         _out: int
         Return: NDArray
         """
+        # Check for correct type
         if isinstance(X, Variable):
-            ind_var = X.value
+            X = X.value
+
+        elif isinstance(X, ndarray):
+            X = X
 
         else:
-            ind_var = X
+            raise TypeError(
+                f"Incorrect type of X, expected Variable or NDArray, got: {type(X)}"
+            )
 
-        return self.random.standard_normal(size=np.transpose(ind_var).shape)
+        p = X.shape[1]  # Number of features.
+
+        return self.random.standard_normal(size=(p, _out))
 
 
 class ScaledInitializer(WeightsInitializer):
