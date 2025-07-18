@@ -29,8 +29,8 @@ class LinearLayer(Layers):
 
     def __init__(
         self,
-        weight_init: WeightsInitializer,
         u_out: int,
+        weight_init: WeightsInitializer | None = None,
         data: Optional[NDArray] = None,
         layer_name: Optional[str] = None,
         *args,

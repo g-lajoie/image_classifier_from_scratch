@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
-from common.enums import WeightInitiailizationMethod
 from numpy import ndarray
 from numpy.random import PCG64
 from numpy.typing import NDArray
 
+from image_classifier.common.enums.weight_initialization_enum import WeightInitMethod
 from image_classifier.common.variable import Variable
 
 
@@ -59,7 +59,7 @@ class RandomInitializer(WeightsInitializer):
 
 class ScaledInitializer(WeightsInitializer):
 
-    def __init__(self, weight_init_method: WeightInitiailizationMethod):
+    def __init__(self, weight_init_method: WeightInitMethod):
         """
         Initializes Scaled Initializer instance.
 
@@ -69,7 +69,7 @@ class ScaledInitializer(WeightsInitializer):
         """
         self.random = np.random.Generator(PCG64())
 
-        if not isinstance(self.initializer_method, WeightInitiailizationMethod):
+        if not isinstance(self.initializer_method, WeightInitMethod):
             raise ValueError(
                 f"weights_init_method must be a member of InitializationMethod enum, got {weight_init_method}"
             )
@@ -105,10 +105,10 @@ class ScaledInitializer(WeightsInitializer):
             )
 
         # Select appropriate initialization method.
-        if self.initializer_method == WeightInitiailizationMethod.XAVIER:
+        if self.initializer_method == WeightInitMethod.XAVIER:
             return self.xavier_init_method(X, _out)
 
-        elif self.initializer_method == WeightInitiailizationMethod.HE:
+        elif self.initializer_method == WeightInitMethod.HE:
             return self.he_init_method(X, _out)
 
         else:

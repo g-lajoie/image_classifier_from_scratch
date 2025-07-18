@@ -9,7 +9,7 @@ import subprocess
 import numpy as np
 from numpy.typing import NDArray
 
-from image_classifier.common.enums import (
+from image_classifier.common.enums.weight_initialization_enum import (
     WeightInitiailizationMethod as WeightInitMethod,
 )
 from image_classifier.common.variable import Variable
@@ -18,7 +18,7 @@ from image_classifier.functions.activiation.base_activation_function import (
     ActivationFunction,
 )
 from image_classifier.functions.loss import BCEWithLogits
-from image_classifier.layers import LinearLayer
+from image_classifier.layers import LayerStack, LinearLayer
 from image_classifier.layers.weights_initialization import ScaledInitializer
 from neural_network import NeuralNetwork
 
@@ -30,34 +30,26 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def define_layers() -> list[LinearLayer | ActivationFunction]:
-    """Define Linear Layers, Acitivation Function, and Loss Function."""
+def define_layers() -> LayerStack:
+    """
+    Define Linear Layers, Acitivation Function, and Loss Function.
+    """
+
     logger.info(
         "Defining Linear Layers, Activiation Functions, and Loss Functions for neural network"
     )
 
-    nn_1 = LinearLayer(
-        weight_init=ScaledInitializer(WeightInitMethod.HE),
-        u_out=128,
+    layers = LayerStack(
+        LinearLayer(u_out=128),
+        RELU(),
+        LinearLayer(u_out=256),
+        RELU(),
+        LinearLayer(u_out=10),
     )
-
-    nn_2 = LinearLayer(
-        weight_init=ScaledInitializer(WeightInitMethod.HE),
-        u_out=256,
-    )
-
-    nn_3 = LinearLayer(
-        weight_init=ScaledInitializer(WeightInitMethod.XAVIER),
-        u_out=1,
-    )
-
-    relu = RELU()  # Activation Function
-    loss_fn = BCEWithLogits()  # Loss Function
 
     logger.info("Neural network layers successfully created.")
 
-    # Combine all layers
-    return [nn_1, relu, nn_2, relu, nn_3]
+    return layers
 
 
 def get_data() -> None:
@@ -89,8 +81,12 @@ def main() -> None:
     # Load Data
     data = get_data()
 
-    # Define Model
-    layers = define_layers()
+    # Define Model Structure
+    layers = define_layers()  # Layers
+    loss_fn = BCEWithLogits()  # Loss Function
+    optimizer_fn = None  # Activaiton Functions
+
+    # Initialize Model
     model = NeuralNetwork(data, layers)
 
 

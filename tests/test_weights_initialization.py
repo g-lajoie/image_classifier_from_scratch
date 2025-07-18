@@ -3,7 +3,9 @@ import pytest
 from numpy.random import PCG64
 from numpy.typing import NDArray
 
-from image_classifier.common.enums import WeightInitiailizationMethod as InitMethod
+from image_classifier.common.enums.weight_initialization_enum import (
+    WeightInitiailizationMethod as InitMethod,
+)
 from image_classifier.layers.weights_initialization import (
     RandomInitializer,
     ScaledInitializer,
