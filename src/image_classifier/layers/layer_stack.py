@@ -20,6 +20,7 @@ class LayerStack:
 
         # Initialization Methods
         self.set_weight_inits()
+        self.set_layer_hierarchy()
 
     def set_weight_inits(self):
         """
@@ -28,15 +29,15 @@ class LayerStack:
 
         for i in range(len(self.layers)):
 
-            if i == len(self.layers) - 1:
-                break
+            if isinstance(self.layers[i], LinearLayer):
 
-            if isinstance(self.layers[i + 1], RELU) and isinstance(
-                self.layers[i], LinearLayer
-            ):
-                current_layer = cast(LinearLayer, self.layers[i])
-                current_layer.weight_init_method = WeightInitMethod.HE
-                current_layer.next_layer = self.layers[i + 1]
+                if i == len(self.layers) - 1:
+                    pass
+
+                elif isinstance(self.layers[i + 1], RELU):
+                    current_layer = cast(LinearLayer, self.layers[i])
+                    current_layer.weight_init_method = WeightInitMethod.HE
+                    current_layer.child_layer = self.layers[i + 1]
 
     def set_layer_hierarchy(self):
         """
@@ -44,4 +45,7 @@ class LayerStack:
         """
 
         for i in range(len(self.layers) - 1):
-            self.layers[i].
+            if i != 0:
+                self.layers[i].parent_layer = self.layers[i - 1]
+
+            self.layers[i].child_layer = self.layers[i + 1]

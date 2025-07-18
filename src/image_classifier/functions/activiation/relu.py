@@ -1,5 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
+from typing import cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -17,23 +18,18 @@ class RELU(ActivationFunction, Layers):
     ReLU: Rectified Linear Unit
     """
 
-    def __init__(self, data=None):
-        self._data = data
+    def __init__(self, ind_var=None):
+        self._ind_var: Variable | None = ind_var
+        self._dep_var: Variable | None = None
+        self._
 
     @property
-    def data(self) -> NDArray | None:
-        return self._data
+    def variables(self):
+        """
+        List of all the variables for the layer
+        """
 
-    @data.setter
-    def data(self, new_data_value) -> NDArray | None:
-
-        if isinstance(new_data_value, np.ndarray):
-            return new_data_value
-        else:
-            logger.error(
-                "Data must be of type<NDArray>, got %s", new_data_value, exc_info=True
-            )
-            raise
+        return
 
     def forward(self):
         """

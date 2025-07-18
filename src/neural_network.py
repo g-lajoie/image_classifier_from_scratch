@@ -25,16 +25,27 @@ class NeuralNetwork:
         layers Sequence[Layers]: Layers for neural network. Layers will be evaluated in sequential order.
     """
 
-    def __init__(self, data: NDArray | None = None, *layers: Layers | None, **kwargs):
+    def __init__(
+        self, data: NDArray | None = None, *layers: Layers | LayerStack | None, **kwargs
+    ):
         self._data = data
 
-        if (
-            isinstance(layers, tuple)
-            and isinstance(layers[0], Layers)
-            and not isinstance(layers, NoneType)
+        if isinstance(layers, tuple) and all(
+            [isinstance(layer, Layers) for layer in layers]
         ):
             layers = cast(tuple[Layers], layers)
             self._layers_stack = LayerStack(*layers)
+
+        elif isinstance(layers, tuple) and all(
+            [isinstance(layer, LayerStack) for layer in layers]
+        ):
+            combined_layers = []
+
+            for layer in layers:
+                layer = cast(LayerStack, layer)
+                combined_layers.append(layer.layers)
+
+            self._layers_stack = LayerStack(*combined_layers)
 
     @property
     def data(self):
@@ -82,6 +93,13 @@ class NeuralNetwork:
         if not isinstance(self.layers_stack, LayerStack):
             logger.error("Layers attribute must be before model can be trained")
 
+        # Get layers
+        layers: tuple[Layers, ...] = self.layers_stack.layers
+
         # Initialize First Layer
-        first_layer = self.layers_stack.layers[0]
-        first_layer.data = self.data
+        first_layer = layers[0]
+        first_layer.ind_var = Variable(self.data, "ind_var")
+
+        # Start foward pass
+        for i in range(1, len(layers)):
+            layers[i].forward()
