@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 
 import numpy as np
@@ -10,8 +11,12 @@ from image_classifier.functions.activiation.base_activation_function import (
 )
 from image_classifier.layers.weights_initialization import WeightsInitializer
 
+from .base_layers import Layers
 
-class LinearLayer:
+logger = logging.getLogger(__name__)
+
+
+class LinearLayer(Layers):
     """
     The linear (dense) layer of a neural network
 
@@ -24,29 +29,49 @@ class LinearLayer:
 
     def __init__(
         self,
-        data: NDArray,
         weight_init: WeightsInitializer,
         u_out: int,
+        data: Optional[NDArray] = None,
+        layer_name: Optional[str] = None,
         *args,
         **kwargs,
     ):
         self.weights_init = weight_init
         self.u_out = u_out
+        self._data = data
+        self.layer_name = layer_name
 
-    def forward(self, X: Variable | NDArray) -> np.ndarray:
+    @property
+    def data(self) -> NDArray | None:
+        return self._data
+
+    @data.setter
+    def data(self, new_data_value) -> NDArray | None:
+        self._data = new_data_value
+
+    def forward(self) -> NDArray:
         """
         Calculates the Linear Layer, to be used in the forward pass.
-
-        Attributes:
-            X: Data for the linear layer.
         """
 
         # Convert X to NDArray
-        X = to_ndarry(X)
+        if self.data:
+            X = to_ndarry(self.data)
 
-        W = self.weights_init.init_weights(X, self.u_out)  # Weight matrix
-        b = np.zeros(
-            W.shape[1],
-        )  # bias vector.
+        else:
+            logger.error(
+                "No data loaded into this layer, please provide data %s and rerun the model",
+                self.__repr__(),
+                exc_info=True,
+            )
+            raise
+
+        W = Variable(
+            self.weights_init.init_weights(X, self.u_out), "Weight", self.layer_name
+        )
+        b = Variable(np.zeros(W.shape[1]), "bias vector", self.layer_name)
 
         return np.dot(X, W) + b
+
+    def backward(self):
+        pass

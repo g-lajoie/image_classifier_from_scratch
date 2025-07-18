@@ -14,18 +14,14 @@ class BCEWithLogits(LossFunction):
     Binary Cross Entropy with Logit Loss
     """
 
-    def forward(self, X: Variable | NDArray, y: NDArray) -> Variable:
+    def forward(self, X: Variable, y: NDArray):
         """
         Binary Cross Entropy with Logit Loss
 
         Arguments
             x: Input of the function, from previous hidden layer.
             y: Labels.
-
-        Return: Variable.
         """
-
-        X = to_ndarry(X)
 
         return to_variable(-(y * np.log(self.sigmoid_function(X))), "BCELogitLoss")
 
@@ -38,4 +34,4 @@ class BCEWithLogits(LossFunction):
         return 1 / (1 + np.exp(-x))
 
     def backward(self, x: Variable, y: NDArray):
-        return self.forward(x, y) - y
+        return
