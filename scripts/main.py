@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 def define_layers() -> list[LinearLayer | ActivationFunction]:
-    # Define Linear Layers, Acitivation Function, and Loss Function.
+    """Define Linear Layers, Acitivation Function, and Loss Function."""
     logger.info(
         "Defining Linear Layers, Activiation Functions, and Loss Functions for neural network"
     )
