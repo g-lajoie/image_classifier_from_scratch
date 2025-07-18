@@ -1,15 +1,20 @@
 import logging
-from typing import Optional
+from typing import Optional, cast
 
 import numpy as np
 from numpy.typing import NDArray
 from utils.type_helpers import to_ndarry, to_variable
 
+from image_classifier.common.enums import WeightInitMethod
 from image_classifier.common.variable import Variable
 from image_classifier.functions.activiation.base_activation_function import (
     ActivationFunction,
 )
-from image_classifier.layers.weights_initialization import WeightsInitializer
+from image_classifier.layers.weights_initialization import (
+    RandomInitializer,
+    ScaledInitializer,
+    WeightsInitializer,
+)
 
 from .base_layers import Layers
 
@@ -29,25 +34,71 @@ class LinearLayer(Layers):
 
     def __init__(
         self,
-        u_out: int,
-        weight_init: WeightsInitializer | None = None,
         data: Optional[NDArray] = None,
-        layer_name: Optional[str] = None,
+        weight_init_method: WeightInitMethod | None = None,
+        next_layer: Optional[Layers] = None,
         *args,
         **kwargs,
     ):
-        self.weights_init = weight_init
-        self.u_out = u_out
-        self._data = data
-        self.layer_name = layer_name
+        # Weight Intialization Method
+        self.weight_init = None
+        self.weight_init_method: WeightInitMethod | None = None
+
+        if weight_init_method == WeightInitMethod.RANDOM:
+            self.weight_init = RandomInitializer()
+
+        if (
+            weight_init_method == WeightInitMethod.XAVIER
+            or weight_init_method == WeightInitMethod.HE
+        ):
+            self.weight_init = ScaledInitializer(weight_init_method)
+
+        # Layer Variables
+        self._ind_vars = Variable(data, "input_var") if data else None
+        self._dep_vars = None
+        self.weights = None
+        self.bias = None
+
+        # Graph Variables
+        self._u_out = None
+        self.next_layer = next_layer
 
     @property
-    def data(self) -> NDArray | None:
-        return self._data
+    def ind_vars(self) -> Variable:
+        """
+        Independent variable for linear layer.
+        """
+        if self._ind_vars is None:
+            logger.error("No data provided")
 
-    @data.setter
-    def data(self, new_data_value) -> NDArray | None:
-        self._data = new_data_value
+        if not isinstance(self._ind_vars, Variable):
+            logger.error(
+                "Incorrect type of ind_vars. Expected <Variable> got <%s>",
+                type(self.ind_vars),
+                exc_info=True,
+            )
+
+        return cast(Variable, self._ind_vars)
+
+    @ind_vars.setter
+    def ind_vars(self, data) -> Variable:
+        """
+        Setter function for independent variable.
+        """
+        self._data = data
+
+    @property
+    def dep_vars(self) -> Variable
+
+    @property
+    def variables(self):
+        return [self.weights, self.data, self.bias]
+
+    @property
+    def u_out(self):
+        """
+        The number of units that
+        """
 
     def forward(self) -> NDArray:
         """
@@ -55,23 +106,26 @@ class LinearLayer(Layers):
         """
 
         # Convert X to NDArray
-        if self.data:
-            X = to_ndarry(self.data)
-
-        else:
+        if self.data is None:
             logger.error(
-                "No data loaded into this layer, please provide data %s and rerun the model",
-                self.__repr__(),
+                "No data loaded into this layer, please provide data and rerun the model",
                 exc_info=True,
             )
             raise
 
-        W = Variable(
-            self.weights_init.init_weights(X, self.u_out), "Weight", self.layer_name
+        if self.weight_init is None:
+            logger.error("weight_init attribute is required")
+            raise
+
+        # Variables
+        self.weights = Variable(
+            self.weight_init.init_weights(self.data, self.u_out),
+            "Weight",
         )
+
         b = Variable(np.zeros(W.shape[1]), "bias vector", self.layer_name)
 
-        return np.dot(X, W) + b
+        return np.dot(self.data, W) + b
 
     def backward(self):
         pass

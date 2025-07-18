@@ -12,7 +12,6 @@ class Variable:
     # Define Variables
     value: NDArray = field(repr=False)
     label: str
-    layer_name: Optional[str]
     backward: Callable = field(default_factory=lambda: lambda: None)
     children: Optional[Iterable] = field(default_factory=list)
     grad: float = 0.0
