@@ -14,6 +14,9 @@ from image_classifier.common.enums import (
 )
 from image_classifier.common.variable import Variable
 from image_classifier.functions.activiation import RELU
+from image_classifier.functions.activiation.base_activation_function import (
+    ActivationFunction,
+)
 from image_classifier.functions.loss import BCEWithLogits
 from image_classifier.layers import LinearLayer
 from image_classifier.layers.weights_initialization import ScaledInitializer
@@ -27,7 +30,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def define_layers() -> list[tuple[LinearLayer, RELU | BCEWithLogits]]:
+def define_layers() -> list[LinearLayer | ActivationFunction]:
     # Define Linear Layers, Acitivation Function, and Loss Function.
     logger.info(
         "Defining Linear Layers, Activiation Functions, and Loss Functions for neural network"
@@ -54,10 +57,18 @@ def define_layers() -> list[tuple[LinearLayer, RELU | BCEWithLogits]]:
     logger.info("Neural network layers successfully created.")
 
     # Combine all layers
-    return [(nn_1, relu), (nn_2, relu), (nn_3, loss_fn)]
+    return [nn_1, relu, nn_2, relu, nn_3]
 
 
 def get_data() -> None:
+    """
+    Get MNIST Dataset and ensure it conforms to shape(b, c, n, m)
+
+    b: batch_size
+    c: channel = 1, Only dealing with grayscale images.
+    n: number of
+    m: number of features.
+    """
     logger.info("Downloading MNIST Dataset")
 
     try:
@@ -74,8 +85,13 @@ def get_data() -> None:
 
 
 def main() -> None:
-    define_layers()
-    get_data()
+
+    # Load Data
+    data = get_data()
+
+    # Define Model
+    layers = define_layers()
+    model = NeuralNetwork(data, layers)
 
 
 if __name__ == "__main__":

@@ -16,6 +16,7 @@ class LinearLayer:
     The linear (dense) layer of a neural network
 
     Attributes:
+        data: Either initial data or data from previous layers.
         activation_function: Activation function for linear layer.
         weight_init: Weight Initalizer [Xavier, He] for Weights Matrix initialization.
         u_out [Optional]: Number of untis the layer will output
@@ -23,6 +24,7 @@ class LinearLayer:
 
     def __init__(
         self,
+        data: NDArray,
         weight_init: WeightsInitializer,
         u_out: int,
         *args,

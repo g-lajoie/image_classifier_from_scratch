@@ -1,9 +1,9 @@
+from dataclasses import dataclass
 from enum import Enum
 from typing import Callable, Iterable, Optional
 
 import numpy as np
 from numpy.typing import NDArray
-from pydantic import BaseModel
 
 
 class VariableType(str, Enum):
@@ -13,7 +13,8 @@ class VariableType(str, Enum):
     LOSS = "loss"
 
 
-class Variable(BaseModel):
+@dataclass
+class Variable:
 
     value: NDArray
     label: str

@@ -24,10 +24,12 @@ class NeuralNetwork:
         data: NDArray,
         layers: Iterable[tuple[LinearLayer, ActivationFunction | LossFunction]],
     ):
-        pass
+        self.data = data
+        self.layers = layers
 
     def forward(self):
         """
         Defines the forward pass for the neural network model.
         """
-        pass
+
+        for i in self.layers:
