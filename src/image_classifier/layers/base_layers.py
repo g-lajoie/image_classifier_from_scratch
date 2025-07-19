@@ -149,7 +149,7 @@ class Layer(ABC):
 
     @property
     @abstractmethod
-    def parameters(self) -> dict[str, Params]:
+    def parame_dict(self, *args, **kwargs) -> dict[str, Params]:
         """
         Abstract property.
         Should return a dict of all variables (e.g., weights, biases) used in this layer.

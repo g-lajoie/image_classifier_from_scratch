@@ -7,10 +7,17 @@ from image_classifier.layers.base_layers import Layer
 from .base_loss_function import LossFunction
 
 
-class CatCrossEntropy(LossFunction, Layer):
+class CatCrossEntropy(Layer):
     """
     Categorical Cross Entropy
     """
+
+    def param_dict(self) -> dict[str, Params]:
+        """
+        Dictionary of params
+        """
+
+        return {"ind_vars": self.ind_var}
 
     def forward(self, X: Params, y: np.ndarray, error=1e-8) -> Params:
         """
