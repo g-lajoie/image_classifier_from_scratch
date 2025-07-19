@@ -13,7 +13,7 @@ from .base_activation_function import ActivationFunction
 logger = logging.getLogger(__name__)
 
 
-class RELU(ActivationFunction, Layer):
+class RELU(ActivationFunction):
     """
     ReLU: Rectified Linear Unit
     """
@@ -27,20 +27,20 @@ class RELU(ActivationFunction, Layer):
         List of all the parameters for the layer
         """
 
-        return {"ind_var": self.ind_var}
+        return {"ind_var": self.inp}
 
     def forward(self):
         """
         Caclulates the ReLU function.
         """
-        return np.maximum(0, self.ind_var)
+        return np.maximum(0, self.inp)
 
     def backward(self):
         """
         Calculate the dervative for the RELU funcion.
         """
-        if self.ind_var.value is None:
-            logger.error("The value for the %s cannot be None.", self.ind_var.label)
-            raise ValueError(f"The value for {self.ind_var.label} is none.")
+        if self.inp.value is None:
+            logger.error("The value for the %s cannot be None.", self.inp.label)
+            raise ValueError(f"The value for {self.inp.label} is none.")
 
-        return (self.ind_var.value > 0).astype(float)
+        return (self.inp.value > 0).astype(float)

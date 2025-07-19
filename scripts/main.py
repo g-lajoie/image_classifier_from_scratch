@@ -15,10 +15,10 @@ from image_classifier.functions.activiation import RELU
 from image_classifier.functions.activiation.base_activation_function import (
     ActivationFunction,
 )
-from image_classifier.functions.loss import BCEWithLogits
+from image_classifier.functions.loss import CatCrossEntropy
 from image_classifier.layers import LayerStack, LinearLayer
 from image_classifier.layers.weights_initialization import ScaledInitializer
-from neural_network import NeuralNetwork
+from image_classifier.neural_network import NeuralNetwork
 
 # Configure Logging.
 logging.basicConfig(
@@ -50,7 +50,7 @@ def define_layers() -> LayerStack:
     return layers
 
 
-def get_data() -> None:
+def get_data() -> tuple[NDArray, NDArray, NDArray, NDArray]:
     """
     Get MNIST Dataset and ensure it conforms to shape(b, c, n, m)
 
@@ -73,6 +73,8 @@ def get_data() -> None:
     data = np.frombuffer(raw_data)
     print(data)
 
+    return X_train, X_test, y_train, y_test
+
 
 def main() -> None:
 
@@ -81,11 +83,28 @@ def main() -> None:
 
     # Define Model Structure
     layers = define_layers()  # Layers
-    loss_fn = BCEWithLogits()  # Loss Function
+    loss_fn = CatCrossEntropy()  # Loss Function
     optimizer_fn = None  # Activaiton Functions
 
     # Initialize Model
-    model = NeuralNetwork(data, layers)
+    model = NeuralNetwork(data, labels, layers, loss_func=loss_fn, optim=optimizer_fn)
+
+    for epoch in range(100):
+        # Forward pass
+        model.forward()
+
+        # Compute the Loss
+        loss = model.loss()
+        print(loss)
+
+        # Back Propgratmion
+        model.backward()
+
+        # Optimizer Step
+        model.optimizer_step()
+
+        # Zero out the gradient
+        model.zero_grad()
 
 
 if __name__ == "__main__":

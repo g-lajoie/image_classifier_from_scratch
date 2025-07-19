@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
 
+from image_classifier.layers.base_layers import Layer
 
-class ActivationFunction(ABC):
+
+class ActivationFunction(Layer):
     """
     Interface for activaition class.
     """
-
-    def function(self):
-        raise NotImplementedError("The function method has not been implemented.")

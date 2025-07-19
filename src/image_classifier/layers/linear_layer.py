@@ -68,7 +68,7 @@ class LinearLayer(Layer):
 
     @property
     def param_dict(self) -> dict[str, Params]:
-        return {"weights": self.weights, "ind_var": self.ind_var, "bias": self.bias}
+        return {"weights": self.weights, "ind_var": self.inp, "bias": self.bias}
 
     def forward(self) -> NDArray:
         """
@@ -80,13 +80,13 @@ class LinearLayer(Layer):
             raise
 
         self.weights = Params(
-            self.weight_init.init_weights(self.ind_var, self.u_out),
+            self.weight_init.init_weights(self.inp, self.u_out),
             "Weight",
         )
 
         self.bias = Params(np.zeros(self.weights.shape[-1]), "bias vector")
 
-        return np.dot(self.ind_var, self.weights) + self.bias
+        return np.dot(self.inp, self.weights) + self.bias
 
     def backward(self):
         pass

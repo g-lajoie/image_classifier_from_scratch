@@ -12,19 +12,20 @@ from .base_loss_function import LossFunction
 logger = logging.getLogger(__name__)
 
 
-class BCEWithLogits(Layer):
+class BCEWithLogits(LossFunction):
     """
     Binary Cross Entropy with Logit Loss
     """
 
+    @property
     def param_dict(self) -> dict[str, Params]:
         """
         Dictionary of all variables in this layer.
         """
 
-        return {"ind_var": self.ind_var}
+        return {"ind_var": self.inp}
 
-    def forward(self, y_true: NDArray):
+    def forward(self, y_true: NDArray) -> Params:
         """
         Binary Cross Entropy with Logit Loss
 
@@ -33,7 +34,9 @@ class BCEWithLogits(Layer):
             y: Labels.
         """
 
-        return (-(y_true * np.log(self.sigmoid_function(self.ind_var))), "BCELogitLoss")
+        return Params(
+            -(y_true * np.log(self.sigmoid_function(self.inp))), "BCELogitLoss"
+        )
 
     def sigmoid_function(self, X: Params) -> NDArray:
         """
@@ -41,11 +44,11 @@ class BCEWithLogits(Layer):
         x: Variable. Derivied from previous hidden layer.
         Return: NDArray
         """
-        if self.ind_var.value is None:
-            logger.error("The value for %s cannot be none", self.ind_var.label)
-            raise ValueError(f"Value for {self.ind_var.label} is none")
+        if self.inp.value is None:
+            logger.error("The value for %s cannot be none", self.inp.label)
+            raise ValueError(f"Value for {self.inp.label} is none")
 
-        return 1 / (1 + np.exp(-self.ind_var.value))
+        return 1 / (1 + np.exp(-self.inp.value))
 
     def backward(self, x: Params, y: NDArray):
         return

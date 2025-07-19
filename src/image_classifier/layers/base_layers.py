@@ -25,12 +25,12 @@ class Layer(ABC):
         self._next_layer: Optional["Layer"] = None
 
     @property
-    def ind_var(self) -> Params:
+    def inp(self) -> Params:
         """
         The independent (input) variable of the layer.
         """
         if self._parent_layer is not None and isinstance(self._parent_layer, Params):
-            self._ind_vars = self._parent_layer.dep_var
+            self._ind_vars = self._parent_layer.output
 
         if self._ind_vars is None:
             logger.error("Input variable (ind_var) has not been set.")
@@ -46,8 +46,8 @@ class Layer(ABC):
 
         return self._ind_vars
 
-    @ind_var.setter
-    def ind_var(self, new_ind_var: Params):
+    @inp.setter
+    def inp(self, new_ind_var: Params):
         """
         Sets the independent (input) variable of the layer.
         """
@@ -62,7 +62,7 @@ class Layer(ABC):
         self._ind_vars = new_ind_var
 
     @property
-    def dep_var(self) -> Params:
+    def output(self) -> Params:
         """
         The dependent (output) variable of the layer, computed by the forward method.
         """
@@ -149,7 +149,7 @@ class Layer(ABC):
 
     @property
     @abstractmethod
-    def parame_dict(self, *args, **kwargs) -> dict[str, Params]:
+    def param_dict(self, *args, **kwargs) -> dict[str, Params]:
         """
         Abstract property.
         Should return a dict of all variables (e.g., weights, biases) used in this layer.
