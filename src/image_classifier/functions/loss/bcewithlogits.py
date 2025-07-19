@@ -1,20 +1,22 @@
+import logging
 from abc import ABC, abstractmethod
 
 import numpy as np
 from numpy.typing import NDArray
 
-from image_classifier.common.variable import Variable
-from image_classifier.utils.type_helpers import to_ndarry, to_variable
+from image_classifier.common.parameters import Params
 
 from .base_loss_function import LossFunction
 
+logger = logging.getLogger(__name__)
 
-class BCEWithLogits(LossFunction):
+
+class BCEWithLogits(LossFunction, Layer):
     """
     Binary Cross Entropy with Logit Loss
     """
 
-    def forward(self, X: Variable, y: NDArray):
+    def forward(self, X: Params, y: NDArray):
         """
         Binary Cross Entropy with Logit Loss
 
@@ -23,15 +25,19 @@ class BCEWithLogits(LossFunction):
             y: Labels.
         """
 
-        return to_variable(-(y * np.log(self.sigmoid_function(X))), "BCELogitLoss")
+        return (-(y * np.log(self.sigmoid_function(X))), "BCELogitLoss")
 
-    def sigmoid_function(self, x: NDArray) -> NDArray:
+    def sigmoid_function(self, X: Params) -> NDArray:
         """
         Sigmoid Function.
         x: Variable. Derivied from previous hidden layer.
         Return: NDArray
         """
-        return 1 / (1 + np.exp(-x))
+        if X.value is None:
+            logger.error("The value for %s cannot be none", X.label)
+            raise ValueError(f"Value for {X.label} is none")
 
-    def backward(self, x: Variable, y: NDArray):
+        return 1 / (1 + np.exp(-X.value))
+
+    def backward(self, x: Params, y: NDArray):
         return

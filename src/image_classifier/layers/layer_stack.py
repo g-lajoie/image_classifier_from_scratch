@@ -4,7 +4,7 @@ from image_classifier.common.enums import WeightInitMethod
 from image_classifier.functions.activiation import RELU
 from image_classifier.layers import LinearLayer
 
-from .base_layers import Layers
+from .base_layers import Layer
 
 
 class LayerStack:
@@ -15,7 +15,7 @@ class LayerStack:
         *layers: Tuple of layers.
     """
 
-    def __init__(self, *layers: Layers):
+    def __init__(self, *layers: Layer):
         self.layers = layers
 
         # Initialization Methods
@@ -44,8 +44,9 @@ class LayerStack:
         Helper function that set next layer attribute of each layer.
         """
 
-        for i in range(len(self.layers) - 1):
+        for i in range(len(self.layers)):
             if i != 0:
                 self.layers[i].parent_layer = self.layers[i - 1]
 
-            self.layers[i].child_layer = self.layers[i + 1]
+            if i != len(self.layers) - 1:
+                self.layers[i].child_layer = self.layers[i + 1]

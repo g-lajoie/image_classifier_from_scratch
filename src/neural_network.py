@@ -5,13 +5,13 @@ from typing import Sequence, cast
 import numpy as np
 from numpy.typing import NDArray
 
-from image_classifier.common.variable import Variable
+from image_classifier.common.parameters import Params
 from image_classifier.functions.activiation import RELU
 from image_classifier.functions.activiation.base_activation_function import (
     ActivationFunction,
 )
 from image_classifier.layers import LayerStack, LinearLayer
-from image_classifier.layers.base_layers import Layers
+from image_classifier.layers.base_layers import Layer
 
 logger = logging.getLogger(__name__)
 
@@ -26,14 +26,14 @@ class NeuralNetwork:
     """
 
     def __init__(
-        self, data: NDArray | None = None, *layers: Layers | LayerStack | None, **kwargs
+        self, data: NDArray | None = None, *layers: Layer | LayerStack | None, **kwargs
     ):
         self._data = data
 
         if isinstance(layers, tuple) and all(
-            [isinstance(layer, Layers) for layer in layers]
+            [isinstance(layer, Layer) for layer in layers]
         ):
-            layers = cast(tuple[Layers], layers)
+            layers = cast(tuple[Layer], layers)
             self._layers_stack = LayerStack(*layers)
 
         elif isinstance(layers, tuple) and all(
@@ -85,7 +85,7 @@ class NeuralNetwork:
 
         self._layers_stack = new_layers_value
 
-    def forward(self):
+    def forward(self) -> Params:
         """
         Defines the forward pass for the neural network model.
         """
@@ -94,12 +94,26 @@ class NeuralNetwork:
             logger.error("Layers attribute must be before model can be trained")
 
         # Get layers
-        layers: tuple[Layers, ...] = self.layers_stack.layers
+        layers: tuple[Layer, ...] = self.layers_stack.layers
 
         # Initialize First Layer
         first_layer = layers[0]
-        first_layer.ind_var = Variable(self.data, "ind_var")
+        first_layer.ind_var = Params(self.data, "ind_var")
 
         # Start foward pass
         for i in range(1, len(layers)):
             layers[i].forward()
+
+        # Return Regression Output or Logits
+        last_layer = self.layers_stack.layers[-1]
+
+        if not isinstance(last_layer, LinearLayer):
+            logger.error("The last layers of the model should be a linear layers")
+            raise ValueError("The last layers of the model is not a Linear Layer")
+
+        out_put = last_layer.parameters.get("ind_var")
+
+        if out_put is None:
+            raise ValueError("The output of the model is none")
+
+        return out_put

@@ -4,10 +4,9 @@ from typing import Optional, cast
 
 import numpy as np
 from numpy.typing import NDArray
-from utils.type_helpers import to_ndarry, to_variable
 
 from image_classifier.common.enums import WeightInitMethod
-from image_classifier.common.variable import Variable
+from image_classifier.common.parameters import Params
 from image_classifier.functions.activiation.base_activation_function import (
     ActivationFunction,
 )
@@ -17,12 +16,12 @@ from image_classifier.layers.weights_initialization import (
     WeightsInitializer,
 )
 
-from .base_layers import Layers
+from .base_layers import Layer
 
 logger = logging.getLogger(__name__)
 
 
-class LinearLayer(Layers):
+class LinearLayer(Layer):
     """
     The linear (dense) layer of a neural network
 
@@ -35,11 +34,11 @@ class LinearLayer(Layers):
 
     def __init__(
         self,
-        ind_var: Optional[Variable] = None,
+        ind_var: Optional[Params] = None,
         weight_init_method: WeightInitMethod | None = None,
         u_out: Optional[int] = None,
-        parent_layer: Optional[Layers] = None,
-        next_layer: Optional[Layers] = None,
+        parent_layer: Optional[Layer] = None,
+        next_layer: Optional[Layer] = None,
         *args,
         **kwargs,
     ):
@@ -57,10 +56,10 @@ class LinearLayer(Layers):
             self.weight_init = ScaledInitializer(weight_init_method)
 
         # Layer Variables
-        self._ind_vars = ind_var if isinstance(ind_var, Variable) else None
+        self._ind_vars = ind_var if isinstance(ind_var, Params) else None
         self._dep_vars = None
-        self.weights = Variable(None, "Weights")
-        self.bias = Variable(None, "Bias")
+        self.weights = Params(None, "Weights")
+        self.bias = Params(None, "Bias")
 
         # Graph Variables
         self._u_out = u_out
@@ -68,8 +67,8 @@ class LinearLayer(Layers):
         self._next_layer = next_layer
 
     @property
-    def variables(self):
-        return [self.weights, self.ind_var, self.bias]
+    def param_dict(self) -> dict[str, Params]:
+        return {"weights": self.weights, "ind_var": self.ind_var, "bias": self.bias}
 
     def forward(self) -> NDArray:
         """
@@ -80,12 +79,12 @@ class LinearLayer(Layers):
             logger.error("weight_init attribute is required")
             raise
 
-        self.weights = Variable(
+        self.weights = Params(
             self.weight_init.init_weights(self.ind_var, self.u_out),
             "Weight",
         )
 
-        self.bias = Variable(np.zeros(self.weights.shape[-1]), "bias vector")
+        self.bias = Params(np.zeros(self.weights.shape[-1]), "bias vector")
 
         return np.dot(self.ind_var, self.weights) + self.bias
 

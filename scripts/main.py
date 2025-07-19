@@ -9,10 +9,8 @@ import subprocess
 import numpy as np
 from numpy.typing import NDArray
 
-from image_classifier.common.enums.weight_initialization_enum import (
-    WeightInitiailizationMethod as WeightInitMethod,
-)
-from image_classifier.common.variable import Variable
+from image_classifier.common.enums.weight_initialization_enum import WeightInitMethod
+from image_classifier.common.parameters import Params
 from image_classifier.functions.activiation import RELU
 from image_classifier.functions.activiation.base_activation_function import (
     ActivationFunction,

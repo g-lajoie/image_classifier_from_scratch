@@ -4,12 +4,12 @@ from typing import Optional, cast
 
 from numpy.typing import NDArray
 
-from image_classifier.common import Variable
+from image_classifier.common import Params
 
 logger = logging.getLogger(__name__)
 
 
-class Layers(ABC):
+class Layer(ABC):
     """
     Abstract base class for all neural network layers.
 
@@ -19,24 +19,24 @@ class Layers(ABC):
     """
 
     def __init__(self):
-        self._ind_vars: Optional[Variable] = None
+        self._ind_vars: Optional[Params] = None
         self._u_out: Optional[int] = None
-        self._parent_layer: Optional["Layers"] = None
-        self._next_layer: Optional["Layers"] = None
+        self._parent_layer: Optional["Layer"] = None
+        self._next_layer: Optional["Layer"] = None
 
     @property
-    def ind_var(self) -> Variable:
+    def ind_var(self) -> Params:
         """
         The independent (input) variable of the layer.
         """
-        if self._parent_layer is not None and isinstance(self._parent_layer, Variable):
-            self._ind_vars = self._parent_layer
+        if self._parent_layer is not None and isinstance(self._parent_layer, Params):
+            self._ind_vars = self._parent_layer.dep_var
 
         if self._ind_vars is None:
             logger.error("Input variable (ind_var) has not been set.")
             raise ValueError("ind_var is None")
 
-        if not isinstance(self._ind_vars, Variable):
+        if not isinstance(self._ind_vars, Params):
             logger.error(
                 "Expected ind_var of type <Variable>, got <%s>",
                 type(self._ind_vars),
@@ -47,11 +47,11 @@ class Layers(ABC):
         return self._ind_vars
 
     @ind_var.setter
-    def ind_var(self, new_ind_var: Variable):
+    def ind_var(self, new_ind_var: Params):
         """
         Sets the independent (input) variable of the layer.
         """
-        if not isinstance(new_ind_var, Variable):
+        if not isinstance(new_ind_var, Params):
             logger.error(
                 "ind_var must be of type <Variable>, got <%s>",
                 type(new_ind_var),
@@ -62,11 +62,11 @@ class Layers(ABC):
         self._ind_vars = new_ind_var
 
     @property
-    def dep_var(self) -> Variable:
+    def dep_var(self) -> Params:
         """
         The dependent (output) variable of the layer, computed by the forward method.
         """
-        return Variable(self.forward(), "dep_var")
+        return Params(self.forward(), "dep_var")
 
     @property
     def u_out(self) -> int:
@@ -100,7 +100,7 @@ class Layers(ABC):
             raise TypeError("u_out must be an int or float")
 
     @property
-    def parent_layer(self) -> Optional["Layers"]:
+    def parent_layer(self) -> Optional["Layer"]:
         """
         Returns the previous layer in the network (if any).
         """
@@ -109,11 +109,11 @@ class Layers(ABC):
         return self._parent_layer
 
     @parent_layer.setter
-    def parent_layer(self, new_parent_layer_value: "Layers"):
+    def parent_layer(self, new_parent_layer_value: "Layer"):
         """
         Sets the previous layer in the network.
         """
-        if not isinstance(new_parent_layer_value, Layers):
+        if not isinstance(new_parent_layer_value, Layer):
             logger.error(
                 "Expected parent_layer of type <Layers>, got <%s>",
                 type(new_parent_layer_value),
@@ -124,7 +124,7 @@ class Layers(ABC):
         self._parent_layer = new_parent_layer_value
 
     @property
-    def child_layer(self) -> Optional["Layers"]:
+    def child_layer(self) -> Optional["Layer"]:
         """
         Returns the next layer in the network (if any).
         """
@@ -133,11 +133,11 @@ class Layers(ABC):
         return self._next_layer
 
     @child_layer.setter
-    def child_layer(self, new_child_layer_value: "Layers"):
+    def child_layer(self, new_child_layer_value: "Layer"):
         """
         Sets the next layer in the network.
         """
-        if not isinstance(new_child_layer_value, Layers):
+        if not isinstance(new_child_layer_value, Layer):
             logger.error(
                 "Expected child_layer of type <Layers>, got <%s>",
                 type(new_child_layer_value),
@@ -149,17 +149,17 @@ class Layers(ABC):
 
     @property
     @abstractmethod
-    def variables(self) -> list[Variable]:
+    def parameters(self) -> dict[str, Params]:
         """
         Abstract property.
-        Should return a list of all variables (e.g., weights, biases) used in this layer.
+        Should return a dict of all variables (e.g., weights, biases) used in this layer.
         """
         raise NotImplementedError(
             "The 'variables' property must be implemented by subclass."
         )
 
     @abstractmethod
-    def forward(self) -> NDArray:
+    def forward(self, *args, **kwargs):
         """
         Abstract method to perform the forward pass of the layer.
         Should return the output variable.
@@ -169,7 +169,7 @@ class Layers(ABC):
         )
 
     @abstractmethod
-    def backward(self):
+    def backward(self, *args, **Kwargs):
         """
         Abstract method to perform the backward pass (gradient calculation).
         """

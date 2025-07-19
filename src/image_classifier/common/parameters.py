@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class Variable:
+class Params:
 
     # Define Variables
     value: Optional[NDArray] = field(repr=False)
@@ -31,9 +31,9 @@ class Variable:
                 type(self.value),
                 exc_info=True,
             )
+            raise TypeError("Incorrect type for value")
 
-        value = cast(NDArray, self.value)
-        return value.shape
+        return self.value.shape
 
     # Operations
     def __add__(self, other) -> NDArray:
@@ -55,7 +55,7 @@ class Variable:
                 exc_info=True,
             )
 
-        if not isinstance(other, Variable):
+        if not isinstance(other, Params):
             raise TypeError(
                 f"{other.__name__} is not correct type. Expected Variable, got <{type(other)}>"
             )
