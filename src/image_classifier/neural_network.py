@@ -12,7 +12,7 @@ from typing import Sequence, cast
 import numpy as np
 from numpy.typing import NDArray
 
-from data import DataLoader
+from data_loader import DataLoader
 from image_classifier.common.parameters import Param
 from image_classifier.functions.activiation import RELU
 from image_classifier.functions.activiation.base_activation_function import (

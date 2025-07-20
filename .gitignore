@@ -96,3 +96,4 @@ local_settings.py
 
 # Specific Scripts
 load_data.py
+/data

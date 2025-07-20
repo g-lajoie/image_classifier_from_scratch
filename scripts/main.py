@@ -9,10 +9,11 @@ import subprocess
 import numpy as np
 from numpy.typing import NDArray
 
-from data import DataLoader
+from data_loader import DataLoader
 from image_classifier.functions.activiation import RELU
 from image_classifier.functions.loss import CatCrossEntropy
 from image_classifier.layers import LayerStack, LinearLayer
+from image_classifier.layers.weights_initialization import WeightInitMethod
 from image_classifier.neural_network import NeuralNetwork
 from image_classifier.optimizer import Adam
 
@@ -34,11 +35,11 @@ def define_layers() -> LayerStack:
     )
 
     layers = LayerStack(
-        LinearLayer(u_out=128),
+        LinearLayer(u_out=128, weight_init_method=WeightInitMethod.HE),
         RELU(),
-        LinearLayer(u_out=256),
+        LinearLayer(u_out=256, weight_init_method=WeightInitMethod.HE),
         RELU(),
-        LinearLayer(u_out=10),
+        LinearLayer(u_out=10, weight_init_method=WeightInitMethod.XAVIER),
     )
 
     logger.info("Neural network layers successfully created.")

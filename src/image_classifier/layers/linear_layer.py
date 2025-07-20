@@ -7,13 +7,9 @@ from numpy.typing import NDArray
 
 from image_classifier.common.enums import WeightInitMethod
 from image_classifier.common.parameters import Param
-from image_classifier.functions.activiation.base_activation_function import (
-    ActivationFunction,
-)
 from image_classifier.layers.weights_initialization import (
     RandomInitializer,
     ScaledInitializer,
-    WeightsInitializer,
 )
 from image_classifier.utils.matrix_calculation_helpers import reshape_for_matmul
 

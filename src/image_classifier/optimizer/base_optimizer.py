@@ -1,8 +1,6 @@
-from abc import ABC, abstractmethod
-from typing import Optional
+from abc import abstractmethod
 
 from image_classifier.common import Param
-from image_classifier.layers.base_layers import Layer
 
 
 class Optimizer:
