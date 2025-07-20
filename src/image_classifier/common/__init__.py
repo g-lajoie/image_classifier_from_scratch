@@ -1,3 +1,3 @@
-from .parameters import Params
+from .parameters import Param
 
-__all__ = ["Params"]
+__all__ = ["Param"]

@@ -10,10 +10,10 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class Params:
+class Param:
 
     # Define Variables
-    value: Optional[NDArray] = field(repr=False)
+    value: NDArray = field(repr=False)
     label: str
     backward: Callable = field(default_factory=lambda: lambda: None)
     children: Optional[Iterable] = field(default_factory=list)
@@ -55,7 +55,7 @@ class Params:
                 exc_info=True,
             )
 
-        if not isinstance(other, Params):
+        if not isinstance(other, Param):
             raise TypeError(
                 f"{other.__name__} is not correct type. Expected Variable, got <{type(other)}>"
             )

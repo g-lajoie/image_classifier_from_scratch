@@ -3,7 +3,7 @@ from abc import abstractmethod
 import numpy as np
 from numpy.typing import NDArray
 
-from image_classifier.common import Params
+from image_classifier.common import Param
 from image_classifier.layers.base_layers import Layer
 
 

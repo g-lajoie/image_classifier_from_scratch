@@ -9,13 +9,11 @@ import subprocess
 import numpy as np
 from numpy.typing import NDArray
 
+from data import DataLoader
 from image_classifier.functions.activiation import RELU
-
 from image_classifier.functions.loss import CatCrossEntropy
 from image_classifier.layers import LayerStack, LinearLayer
 from image_classifier.neural_network import NeuralNetwork
-from data import DataLoader
-
 
 # Configure Logging.
 logging.basicConfig(
@@ -84,10 +82,13 @@ def main() -> None:
     optimizer_fn = None  # Activaiton Functions
 
     # Initialize Model
-    model = NeuralNetwork(X_train, y_train, layers, loss_func=loss_fn, optim=optimizer_fn)
+    model = NeuralNetwork(layers=layers, loss_func=loss_fn, optim=optimizer_fn)
 
     for epoch in range(100):
-        for X, y in batch
+        for X, y in data_loader.train_batch:
+            # Zero out the gradient
+            model.zero_grad()
+
             # Forward pass
             model.forward()
 
@@ -100,9 +101,6 @@ def main() -> None:
 
             # Optimizer Step
             model.optimizer_step()
-
-            # Zero out the gradient
-            model.zero_grad()
 
 
 if __name__ == "__main__":

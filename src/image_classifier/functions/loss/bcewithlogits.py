@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 from numpy.typing import NDArray
 
-from image_classifier.common.parameters import Params
+from image_classifier.common.parameters import Param
 from image_classifier.layers.base_layers import Layer
 
 from .base_loss_function import LossFunction
@@ -18,7 +18,7 @@ class BCEWithLogits(LossFunction):
     """
 
     @property
-    def param_dict(self) -> dict[str, Params]:
+    def param_dict(self) -> dict[str, Param]:
         """
         Dictionary of all variables in this layer.
         """
@@ -36,7 +36,7 @@ class BCEWithLogits(LossFunction):
 
         return -(y_true * np.log(self.sigmoid_function(self.inp)))
 
-    def sigmoid_function(self, X: Params) -> NDArray:
+    def sigmoid_function(self, X: Param) -> NDArray:
         """
         Sigmoid Function.
         x: Variable. Derivied from previous hidden layer.
@@ -48,5 +48,5 @@ class BCEWithLogits(LossFunction):
 
         return 1 / (1 + np.exp(-self.inp.value))
 
-    def backward(self, x: Params, y: NDArray) -> np.ndarray:
+    def backward(self, x: Param, y: NDArray) -> np.ndarray:
         return np.zeros_like(0)

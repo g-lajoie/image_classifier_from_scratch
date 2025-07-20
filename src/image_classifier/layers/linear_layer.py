@@ -6,7 +6,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from image_classifier.common.enums import WeightInitMethod
-from image_classifier.common.parameters import Params
+from image_classifier.common.parameters import Param
 from image_classifier.functions.activiation.base_activation_function import (
     ActivationFunction,
 )
@@ -35,7 +35,7 @@ class LinearLayer(Layer):
 
     def __init__(
         self,
-        inp: Optional[Params] = None,
+        inp: Optional[Param] = None,
         weight_init_method: WeightInitMethod | None = None,
         u_out: Optional[int] = None,
         parent_layer: Optional[Layer] = None,
@@ -57,10 +57,8 @@ class LinearLayer(Layer):
             self.weight_init = ScaledInitializer(weight_init_method)
 
         # Layer Variables
-        self._inp = inp if isinstance(inp, Params) else None
-        self._output = None
-        self.weights = Params(None, "Weights")
-        self.bias = Params(None, "Bias")
+        self.weights: Optional[Param] = None
+        self.bias: Optional[Param] = None
 
         # Graph Variables
         self._u_out = u_out
@@ -68,10 +66,14 @@ class LinearLayer(Layer):
         self._next_layer = next_layer
 
     @property
-    def param_dict(self) -> dict[str, Params]:
+    def param_dict(self) -> dict[str, Param]:
+        if (self.weights is None) or (self._inp is None) or (self.bias is None):
+            logger.error("The Weights, Input(X), or Bias parameters have not been set")
+            raise ValueError("The variables: weights, _inp, or bias cannot be None")
+
         return {"weights": self.weights, "X": self.inp, "bias": self.bias}
 
-    def forward(self) -> NDArray:
+    def forward(self):
         """
         Calculates the Linear Layer, to be used in the forward pass.
         """
@@ -80,12 +82,14 @@ class LinearLayer(Layer):
             logger.error("weight_init attribute is required")
             raise
 
-        self.weights = Params(
-            self.weight_init.init_weights(self.inp, self.u_out),
-            "Weight",
-        )
+        if self.weights is None:
+            self.weights = Param(
+                self.weight_init.init_weights(self.inp, self.u_out),
+                "Weight",
+            )
 
-        self.bias = Params(np.zeros(self.weights.shape[-1]), "bias vector")
+        if self.bias is None:
+            self.bias = Param(np.zeros(self.weights.shape[-1]), "bias vector")
 
         return np.dot(self.inp, self.weights) + self.bias
 
@@ -95,12 +99,14 @@ class LinearLayer(Layer):
         """
 
         # Calculate the gradient
-        for v in self.param_dict.values():
-            if v.value is None:
-                raise ValueError(f"The value for {v.label} is none")
+        if (self.weights is None) or (self.inp is None) or (self.bias is None):
+            logger.error(
+                "At least one of the parameters weights, bias, and inp(X) is None."
+            )
+            raise ValueError("The params weights, bias, and inp cannot be None")
 
-        d_weights = cast(NDArray, self.inp.value)
-        d_inp = cast(NDArray, self.weights.value)
+        d_weights = self.inp.value
+        d_inp = self.weights.value
         d_bias = np.array(1)
 
         # Type and Value Checks

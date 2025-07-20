@@ -5,7 +5,7 @@ from typing import cast
 import numpy as np
 from numpy.typing import NDArray
 
-from image_classifier.common.parameters import Params
+from image_classifier.common.parameters import Param
 from image_classifier.layers.base_layers import Layer
 
 from .base_activation_function import ActivationFunction
@@ -22,7 +22,7 @@ class RELU(ActivationFunction):
         pass
 
     @property
-    def param_dict(self) -> dict[str, Params]:
+    def param_dict(self) -> dict[str, Param]:
         """
         List of all the parameters for the layer
         """

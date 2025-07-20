@@ -12,7 +12,8 @@ from typing import Sequence, cast
 import numpy as np
 from numpy.typing import NDArray
 
-from image_classifier.common.parameters import Params
+from data import DataLoader
+from image_classifier.common.parameters import Param
 from image_classifier.functions.activiation import RELU
 from image_classifier.functions.activiation.base_activation_function import (
     ActivationFunction,
@@ -36,25 +37,11 @@ class NeuralNetwork:
 
     def __init__(
         self,
-        X: NDArray,
-        y: NDArray,
         *layers: Layer | LayerStack,
         loss_func: LossFunction,
         optim: Optimizer,
         **kwargs
     ):
-        # Features
-        if X is None:
-            raise ValueError("Must supply data in X (features)")
-
-        self._data = X
-
-        # Labels
-        if y is None:
-            raise ValueError("Must supply data in y (labels)")
-
-        self._y = y
-
         # LayerStack
         if isinstance(layers, tuple) and all(
             [isinstance(layer, Layer) for layer in layers]
@@ -127,20 +114,20 @@ class NeuralNetwork:
 
         self._layers_stack = new_layers_value
 
-    def forward(self) -> Params:
+    def forward(self, X: NDArray) -> Param:
         """
         Defines the forward pass for the neural network model.
         """
 
         if not isinstance(self.layers_stack, LayerStack):
-            logger.error("Layers attribute must be before model can be trained")
+            logger.error("layers must be defined before model can be trained")
 
         # Get layers
         layers: tuple[Layer, ...] = self.layers_stack.layers
 
         # Initialize First Layer
         first_layer = layers[0]
-        first_layer.inp = Params(self.data, "ind_var")
+        first_layer.inp = Param(X, "inp")
 
         # Start foward pass
         for i in range(1, len(layers)):
@@ -153,16 +140,13 @@ class NeuralNetwork:
             logger.error("The last layers of the model should be a linear layers")
             raise ValueError("The last layers of the model is not a Linear Layer")
 
-        out_put = last_layer.param_dict.get("ind_var")
-
-        if out_put is None:
+        if last_layer.output is None:
             raise ValueError("The output of the model is none")
 
-        self.out_put = out_put
+        self.out_put = last_layer.output
+        return self.out_put
 
-        return out_put
-
-    def loss(self):
+    def loss(self, y) -> np.ndarray:
         """
         Calculate the provided loss function.
         """
@@ -175,16 +159,16 @@ class NeuralNetwork:
 
         self.loss_func.inp = out_put
         self.loss_func.parent_layer = self.layers_stack.layers[0]
-        return self.forward()
+        return self.loss_func.forward(y)
 
-    def backward(self):
+    def backward(self, y):
         """
         Define the backward pass for the neural network
         """
 
         # Initialize parent layer
         current_layer = self.loss_func
-        current_layer.backward(self._y)
+        current_layer.backward(y)
 
         parent_layer = current_layer.parent_layer
 

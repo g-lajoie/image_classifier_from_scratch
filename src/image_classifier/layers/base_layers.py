@@ -5,7 +5,7 @@ from typing import Optional, cast
 import numpy as np
 from numpy.typing import NDArray
 
-from image_classifier.common import Params
+from image_classifier.common import Param
 
 logger = logging.getLogger(__name__)
 
@@ -20,54 +20,73 @@ class Layer(ABC):
     """
 
     def __init__(self):
-        self._inp: Optional[Params] = None
+        self._inp: Optional[Param] = None
+        self._output: Optional[Param] = None
         self._u_out: Optional[int] = None
         self._parent_layer: Optional["Layer"] = None
         self._next_layer: Optional["Layer"] = None
 
     @property
-    def inp(self) -> Params:
+    def inp(self) -> Param:
         """
         The independent (input) variable of the layer.
         """
-        if self._parent_layer is not None and isinstance(self._parent_layer, Params):
+        if self._parent_layer is not None and isinstance(self._parent_layer, Param):
             self._inp = self._parent_layer.output
 
         if self._inp is None:
-            logger.error("Input variable (ind_var) has not been set.")
-            raise ValueError("ind_var is None")
+            logger.error("Input variable (inp) has not been set.")
+            raise ValueError("inp is None")
 
-        if not isinstance(self._inp, Params):
+        if not isinstance(self._inp, Param):
             logger.error(
-                "Expected ind_var of type <Variable>, got <%s>",
+                "Expected inp of type <Variable>, got <%s>",
                 type(self._inp),
                 exc_info=True,
             )
-            raise TypeError("Invalid type for ind_var")
+            raise TypeError("Invalid type for inp")
 
         return self._inp
 
     @inp.setter
-    def inp(self, new_ind_var: Params):
+    def inp(self, new_inp_value: Param):
         """
         Sets the independent (input) variable of the layer.
         """
-        if not isinstance(new_ind_var, Params):
+        if not isinstance(new_inp_value, Param):
             logger.error(
-                "ind_var must be of type <Variable>, got <%s>",
-                type(new_ind_var),
+                "inp must be of type <Variable>, got <%s>",
+                type(new_inp_value),
                 exc_info=True,
             )
-            raise TypeError("ind_var must be a Variable")
+            raise TypeError("inp must be a Variable")
 
-        self._inp = new_ind_var
+        self._inp = new_inp_value
 
     @property
-    def output(self) -> Params:
+    def output(self) -> Param:
         """
         The dependent (output) variable of the layer, computed by the forward method.
         """
-        return Params(self.forward(), "dep_var")
+        if self._output is None:
+            logger.error("Output variable has not set.")
+            raise ValueError("output is None")
+
+        return self._output
+
+    @output.setter
+    def output(self, new_output_value: NDArray | Param):
+        """
+        Sets the dependent (output) variable of the layer.
+        """
+
+        if isinstance(new_output_value, np.ndarray):
+            return Param(new_output_value, "output")
+
+        if isinstance(new_output_value, Param):
+            return Param
+
+        raise TypeError("The output variable must be of type NDArray or Params")
 
     @property
     def u_out(self) -> int:
@@ -150,7 +169,7 @@ class Layer(ABC):
 
     @property
     @abstractmethod
-    def param_dict(self, *args, **kwargs) -> dict[str, Params]:
+    def param_dict(self, *args, **kwargs) -> dict[str, Param]:
         """
         Abstract property.
         Should return a dict of all variables (e.g., weights, biases) used in this layer.
