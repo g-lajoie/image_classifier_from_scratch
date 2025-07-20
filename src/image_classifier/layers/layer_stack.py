@@ -34,7 +34,9 @@ class LayerStack:
                 if i == len(self.layers) - 1:
                     pass
 
-                elif isinstance(self.layers[i + 1], RELU):
+                if isinstance(self.layers[i + 1], RELU) and isinstance(
+                    self.layers[i], LinearLayer
+                ):
                     current_layer = cast(LinearLayer, self.layers[i])
                     current_layer.weight_init_method = WeightInitMethod.HE
                     current_layer.child_layer = self.layers[i + 1]

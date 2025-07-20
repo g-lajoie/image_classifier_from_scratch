@@ -39,9 +39,13 @@ class NeuralNetwork:
         self,
         *layers: Layer | LayerStack,
         loss_func: LossFunction,
-        optim: Optimizer,
+        optimizer: Optimizer,
         **kwargs
     ):
+        # Data
+        self._X = None
+        self._y = None
+
         # LayerStack
         if isinstance(layers, tuple) and all(
             [isinstance(layer, Layer) for layer in layers]
@@ -69,34 +73,35 @@ class NeuralNetwork:
         self.loss_func = loss_func
 
         # Optimizer
-        if not isinstance(optim, Optimizer):
-            raise TypeError(
-                "The optimizer must be type of or subtclasso of <Optimizer>"
-            )
-
-        self.optim = optim
+        self.optim = optimizer
 
     @property
-    def data(self):
-        """
-        Train, Validation, or Test dataset, loaded externally.
-        """
-        return self._data
+    def X(self) -> np.ndarray:
+        if self._X is None:
+            raise ValueError("The value for X must be set")
 
-    @data.setter
-    def data(self, new_data_value):
-        """
-        Setter function for data property.
-        """
-        if isinstance(new_data_value, np.ndarray):
-            self._data = new_data_value
+        return self._X
 
-        else:
-            logger.error(
-                "The data value must type<NDArray>, got %s",
-                new_data_value,
-                exc_info=True,
-            )
+    @X.setter
+    def X(self, new_X):
+        if not isinstance(new_X, np.ndarray):
+            raise ValueError("X value must be set with type NDArray")
+
+        self._X = new_X
+
+    @property
+    def y(self) -> np.ndarray:
+        if self._y is None:
+            raise ValueError("The value for y must be set")
+
+        return self._y
+
+    @y.setter
+    def y(self, new_y):
+        if not isinstance(new_y, np.ndarray):
+            raise ValueError("y value must be set with type NDArray")
+
+        self._y = new_y
 
     @property
     def layers_stack(self):
@@ -114,7 +119,18 @@ class NeuralNetwork:
 
         self._layers_stack = new_layers_value
 
-    def forward(self, X: NDArray) -> Param:
+    @property
+    def parameters(self):
+        params = []
+
+        for i in self.layers_stack.layers:
+            if isinstance(i, LinearLayer):
+                params.append(i.weights)
+                params.append(i.bias)
+
+        return params
+
+    def forward(self) -> Param:
         """
         Defines the forward pass for the neural network model.
         """
@@ -127,7 +143,7 @@ class NeuralNetwork:
 
         # Initialize First Layer
         first_layer = layers[0]
-        first_layer.inp = Param(X, "inp")
+        first_layer.inp = Param(self.X, "inp")
 
         # Start foward pass
         for i in range(1, len(layers)):
@@ -146,7 +162,7 @@ class NeuralNetwork:
         self.out_put = last_layer.output
         return self.out_put
 
-    def loss(self, y) -> np.ndarray:
+    def loss(self) -> np.ndarray:
         """
         Calculate the provided loss function.
         """
@@ -159,16 +175,16 @@ class NeuralNetwork:
 
         self.loss_func.inp = out_put
         self.loss_func.parent_layer = self.layers_stack.layers[0]
-        return self.loss_func.forward(y)
+        return self.loss_func.forward(self.y)
 
-    def backward(self, y):
+    def backward(self):
         """
         Define the backward pass for the neural network
         """
 
         # Initialize parent layer
         current_layer = self.loss_func
-        current_layer.backward(y)
+        current_layer.backward(self.y)
 
         parent_layer = current_layer.parent_layer
 
@@ -177,16 +193,10 @@ class NeuralNetwork:
             parent_layer.backward()
             parent_layer.parent_layer
 
-    def optimizer_step(self):
-        """
-        Update the parameters.
-        """
-
-        pass
+    def step(self):
+        self.optim.model_parameters = self.parameters
+        self.optim.step()
 
     def zero_grad(self):
-        """
-        Zero out the gradient.
-        """
-
-        pass
+        self.optim.model_parameters = self.parameters
+        self.optim.zero_grad()

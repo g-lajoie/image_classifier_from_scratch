@@ -14,6 +14,7 @@ from image_classifier.functions.activiation import RELU
 from image_classifier.functions.loss import CatCrossEntropy
 from image_classifier.layers import LayerStack, LinearLayer
 from image_classifier.neural_network import NeuralNetwork
+from image_classifier.optimizer import Adam
 
 # Configure Logging.
 logging.basicConfig(
@@ -79,15 +80,19 @@ def main() -> None:
     # Define Model Structure
     layers = define_layers()  # Layers
     loss_fn = CatCrossEntropy()  # Loss Function
-    optimizer_fn = None  # Activaiton Functions
+    optim = Adam()
 
     # Initialize Model
-    model = NeuralNetwork(layers=layers, loss_func=loss_fn, optim=optimizer_fn)
+    model = NeuralNetwork(layers=layers, loss_func=loss_fn, optimizer=optim)
 
     for epoch in range(100):
-        for X, y in data_loader.train_batch:
+        for X_train, y_train in data_loader.train_batch:
+            # Load data to the model
+            model.X = X_train
+            model.y = y_train
+
             # Zero out the gradient
-            model.zero_grad()
+            optim.zero_grad()
 
             # Forward pass
             model.forward()
@@ -99,8 +104,8 @@ def main() -> None:
             # Back Propgratmion
             model.backward()
 
-            # Optimizer Step
-            model.optimizer_step()
+            # Optimize the params.
+            model.step()
 
 
 if __name__ == "__main__":
