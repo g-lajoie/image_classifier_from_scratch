@@ -94,5 +94,5 @@ Desktop.ini
 # Local settings (optional)
 local_settings.py
 
-# Data
-data/
+# Specific Scripts
+load_data.py

@@ -39,8 +39,16 @@ class RELU(ActivationFunction):
         """
         Calculate the dervative for the RELU funcion.
         """
+
         if self.inp.value is None:
             logger.error("The value for the %s cannot be None.", self.inp.label)
             raise ValueError(f"The value for {self.inp.label} is none.")
 
-        return (self.inp.value > 0).astype(float)
+        if self.child_layer is None:
+            logger.error(
+                "The child layer for the RELU layer cannot be None. ReLU is a hidden layer.",
+                self.inp.label,
+            )
+            raise ValueError(f"The child layer for ReLU is none.")
+
+        self.inp.grad = (self.inp.value > 0).astype(float) @ self.child_layer.inp.grad

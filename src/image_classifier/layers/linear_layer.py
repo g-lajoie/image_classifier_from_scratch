@@ -89,30 +89,35 @@ class LinearLayer(Layer):
 
         return np.dot(self.inp, self.weights) + self.bias
 
-    def backward(self) -> np.ndarray:
+    def backward(self):
         """
         Deriviate of the linear layer w.r.t eac parameter
         """
 
-        # Type and Value Checks
-        if self.child_layer is None:
-            raise ValueError("There is no child layer")
-
+        # Calculate the gradient
         for v in self.param_dict.values():
             if v.value is None:
                 raise ValueError(f"The value for {v.label} is none")
 
-        # Partial Deriative of the child layer.
-        d_child_layer_grad = self.child_layer.backward()
+        d_weights = cast(NDArray, self.inp.value)
+        d_inp = cast(NDArray, self.weights.value)
+        d_bias = np.array(1)
 
-        # Update Grad
-        self.weights.grad = (
-            reshape_for_matmul(self.weights.value, d_child_layer_grad)
-            @ d_child_layer_grad
-        )
-        self.inp.grad = (
-            reshape_for_matmul(self.inp.value, d_child_layer_grad) @ d_child_layer_grad
-        )
-        self.bias.grad = np.sum(d_child_layer_grad, axis=0)
+        # Type and Value Checks
+        if self.child_layer is None:
+            self.weights.grad = d_weights
+            self.inp.grad = d_inp
+            self.bias.grad = d_bias
 
-        return self.inp.grad
+        else:
+            # Partial Deriative of the child layer.
+            d_child_layer_grad = self.child_layer.inp.grad
+
+            # Update Grad
+            self.weights.grad = (
+                reshape_for_matmul(d_weights, d_child_layer_grad) @ d_child_layer_grad
+            )
+            self.inp.grad = (
+                reshape_for_matmul(d_inp, d_child_layer_grad) @ d_child_layer_grad
+            )
+            self.bias.grad = np.sum(d_bias, axis=0)

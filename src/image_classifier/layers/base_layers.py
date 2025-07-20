@@ -160,7 +160,7 @@ class Layer(ABC):
         )
 
     @abstractmethod
-    def forward(self, *args, **kwargs) -> np.ndarray:
+    def forward(self, *args, **kwargs):
         """
         Abstract method to perform the forward pass of the layer.
         Should return the output variable.
@@ -170,7 +170,7 @@ class Layer(ABC):
         )
 
     @abstractmethod
-    def backward(self, *args, **Kwargs) -> np.ndarray:
+    def backward(self, *args, **Kwargs):
         """
         Abstract method to perform the backward pass (gradient calculation).
         """

@@ -13,7 +13,7 @@ class LossFunction(Layer):
     """
 
     @abstractmethod
-    def forwrd(self, y_true: NDArray, *args, **kwargs) -> np.ndarray:
+    def forward(self, y_true: NDArray, *args, **kwargs):
         """
         Abstract method, overwritten for loss functions.
         """
@@ -23,7 +23,7 @@ class LossFunction(Layer):
         )
 
     @abstractmethod
-    def backward(self, y_true: NDArray, *args, **kwargs) -> np.ndarray:
+    def backward(self, y_true: NDArray, *args, **kwargs):
         """
         Abstract method, overwritten for the loss function
         """

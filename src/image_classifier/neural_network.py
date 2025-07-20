@@ -1,3 +1,10 @@
+"""
+Image Classifier Model.
+
+Responsible for:
+    - Training Model.
+"""
+
 import logging
 from types import NoneType
 from typing import Sequence, cast
@@ -151,7 +158,24 @@ class NeuralNetwork:
         if out_put is None:
             raise ValueError("The output of the model is none")
 
+        self.out_put = out_put
+
         return out_put
+
+    def loss(self):
+        """
+        Calculate the provided loss function.
+        """
+
+        try:
+            out_put = self.out_put
+        except AttributeError:
+            logger.error("Could not find output attribute, please run forward pass")
+            raise
+
+        self.loss_func.inp = out_put
+        self.loss_func.parent_layer = self.layers_stack.layers[0]
+        return self.forward()
 
     def backward(self):
         """
@@ -160,19 +184,14 @@ class NeuralNetwork:
 
         # Initialize parent layer
         current_layer = self.loss_func
+        current_layer.backward(self._y)
+
         parent_layer = current_layer.parent_layer
 
         # Continue the backward pass.
         while parent_layer is not None:
             parent_layer.backward()
             parent_layer.parent_layer
-
-    def loss(self):
-        """
-        Calculate the provided loss function.
-        """
-
-        pass
 
     def optimizer_step(self):
         """
