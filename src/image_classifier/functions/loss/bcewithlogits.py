@@ -25,7 +25,7 @@ class BCEWithLogits(LossFunction):
 
         return {"ind_var": self.inp}
 
-    def forward(self, y_true: NDArray) -> Params:
+    def forward(self, y_true: NDArray) -> np.ndarray:
         """
         Binary Cross Entropy with Logit Loss
 
@@ -34,9 +34,7 @@ class BCEWithLogits(LossFunction):
             y: Labels.
         """
 
-        return Params(
-            -(y_true * np.log(self.sigmoid_function(self.inp))), "BCELogitLoss"
-        )
+        return -(y_true * np.log(self.sigmoid_function(self.inp)))
 
     def sigmoid_function(self, X: Params) -> NDArray:
         """
@@ -50,5 +48,5 @@ class BCEWithLogits(LossFunction):
 
         return 1 / (1 + np.exp(-self.inp.value))
 
-    def backward(self, x: Params, y: NDArray):
-        return
+    def backward(self, x: Params, y: NDArray) -> np.ndarray:
+        return np.zeros_like(0)

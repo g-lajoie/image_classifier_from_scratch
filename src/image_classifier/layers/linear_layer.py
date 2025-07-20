@@ -15,6 +15,7 @@ from image_classifier.layers.weights_initialization import (
     ScaledInitializer,
     WeightsInitializer,
 )
+from image_classifier.utils.matrix_calculation_helpers import reshape_for_matmul
 
 from .base_layers import Layer
 
@@ -34,7 +35,7 @@ class LinearLayer(Layer):
 
     def __init__(
         self,
-        ind_var: Optional[Params] = None,
+        inp: Optional[Params] = None,
         weight_init_method: WeightInitMethod | None = None,
         u_out: Optional[int] = None,
         parent_layer: Optional[Layer] = None,
@@ -56,8 +57,8 @@ class LinearLayer(Layer):
             self.weight_init = ScaledInitializer(weight_init_method)
 
         # Layer Variables
-        self._ind_vars = ind_var if isinstance(ind_var, Params) else None
-        self._dep_vars = None
+        self._inp = inp if isinstance(inp, Params) else None
+        self._output = None
         self.weights = Params(None, "Weights")
         self.bias = Params(None, "Bias")
 
@@ -68,7 +69,7 @@ class LinearLayer(Layer):
 
     @property
     def param_dict(self) -> dict[str, Params]:
-        return {"weights": self.weights, "ind_var": self.inp, "bias": self.bias}
+        return {"weights": self.weights, "X": self.inp, "bias": self.bias}
 
     def forward(self) -> NDArray:
         """
@@ -88,5 +89,30 @@ class LinearLayer(Layer):
 
         return np.dot(self.inp, self.weights) + self.bias
 
-    def backward(self):
-        pass
+    def backward(self) -> np.ndarray:
+        """
+        Deriviate of the linear layer w.r.t eac parameter
+        """
+
+        # Type and Value Checks
+        if self.child_layer is None:
+            raise ValueError("There is no child layer")
+
+        for v in self.param_dict.values():
+            if v.value is None:
+                raise ValueError(f"The value for {v.label} is none")
+
+        # Partial Deriative of the child layer.
+        d_child_layer_grad = self.child_layer.backward()
+
+        # Update Grad
+        self.weights.grad = (
+            reshape_for_matmul(self.weights.value, d_child_layer_grad)
+            @ d_child_layer_grad
+        )
+        self.inp.grad = (
+            reshape_for_matmul(self.inp.value, d_child_layer_grad) @ d_child_layer_grad
+        )
+        self.bias.grad = np.sum(d_child_layer_grad, axis=0)
+
+        return self.inp.grad

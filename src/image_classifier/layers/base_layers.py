@@ -2,6 +2,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Optional, cast
 
+import numpy as np
 from numpy.typing import NDArray
 
 from image_classifier.common import Params
@@ -19,7 +20,7 @@ class Layer(ABC):
     """
 
     def __init__(self):
-        self._ind_vars: Optional[Params] = None
+        self._inp: Optional[Params] = None
         self._u_out: Optional[int] = None
         self._parent_layer: Optional["Layer"] = None
         self._next_layer: Optional["Layer"] = None
@@ -30,21 +31,21 @@ class Layer(ABC):
         The independent (input) variable of the layer.
         """
         if self._parent_layer is not None and isinstance(self._parent_layer, Params):
-            self._ind_vars = self._parent_layer.output
+            self._inp = self._parent_layer.output
 
-        if self._ind_vars is None:
+        if self._inp is None:
             logger.error("Input variable (ind_var) has not been set.")
             raise ValueError("ind_var is None")
 
-        if not isinstance(self._ind_vars, Params):
+        if not isinstance(self._inp, Params):
             logger.error(
                 "Expected ind_var of type <Variable>, got <%s>",
-                type(self._ind_vars),
+                type(self._inp),
                 exc_info=True,
             )
             raise TypeError("Invalid type for ind_var")
 
-        return self._ind_vars
+        return self._inp
 
     @inp.setter
     def inp(self, new_ind_var: Params):
@@ -59,7 +60,7 @@ class Layer(ABC):
             )
             raise TypeError("ind_var must be a Variable")
 
-        self._ind_vars = new_ind_var
+        self._inp = new_ind_var
 
     @property
     def output(self) -> Params:
@@ -159,7 +160,7 @@ class Layer(ABC):
         )
 
     @abstractmethod
-    def forward(self, *args, **kwargs):
+    def forward(self, *args, **kwargs) -> np.ndarray:
         """
         Abstract method to perform the forward pass of the layer.
         Should return the output variable.
@@ -169,7 +170,7 @@ class Layer(ABC):
         )
 
     @abstractmethod
-    def backward(self, *args, **Kwargs):
+    def backward(self, *args, **Kwargs) -> np.ndarray:
         """
         Abstract method to perform the backward pass (gradient calculation).
         """

@@ -17,7 +17,7 @@ class Params:
     label: str
     backward: Callable = field(default_factory=lambda: lambda: None)
     children: Optional[Iterable] = field(default_factory=list)
-    grad: float = 0.0
+    grad: NDArray = field(default_factory=lambda: np.array([0]))
 
     # Calculated Variables
     @property

@@ -159,7 +159,13 @@ class NeuralNetwork:
         """
 
         # Initialize parent layer
-        parent_layer = self.loss_func.parent_layer
+        current_layer = self.loss_func
+        parent_layer = current_layer.parent_layer
+
+        # Continue the backward pass.
+        while parent_layer is not None:
+            parent_layer.backward()
+            parent_layer.parent_layer
 
     def loss(self):
         """
