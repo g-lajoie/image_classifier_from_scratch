@@ -6,18 +6,11 @@ Responsible for:
 """
 
 import logging
-from types import NoneType
-from typing import Sequence, cast
+from typing import cast
 
 import numpy as np
-from numpy.typing import NDArray
 
-from data_loader import DataLoader
 from image_classifier.common.parameters import Param
-from image_classifier.functions.activiation import RELU
-from image_classifier.functions.activiation.base_activation_function import (
-    ActivationFunction,
-)
 from image_classifier.functions.loss.base_loss_function import LossFunction
 from image_classifier.layers import LayerStack, LinearLayer
 from image_classifier.layers.base_layers import Layer

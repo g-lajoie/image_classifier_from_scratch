@@ -30,6 +30,7 @@ env/
 ENV/
 .venv/
 .env/
+.env
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -96,4 +97,9 @@ local_settings.py
 
 # Specific Scripts
 load_data.py
-/data
+
+# Temp Files
+/tmp
+
+# Notebooks
+/notebooks

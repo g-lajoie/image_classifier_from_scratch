@@ -4,12 +4,12 @@ Not part of production code.
 """
 
 import logging
-import subprocess
+import os
+from pathlib import Path
 
 import numpy as np
 from numpy.typing import NDArray
 
-from data_loader import DataLoader
 from image_classifier.functions.activiation import RELU
 from image_classifier.functions.loss import CatCrossEntropy
 from image_classifier.layers import LayerStack, LinearLayer
@@ -47,36 +47,15 @@ def define_layers() -> LayerStack:
     return layers
 
 
-def get_data() -> DataLoader:
-    """
-    Get MNIST Dataset and ensure it conforms to shape(b, c, n, m)
-
-    b: batch_size
-    c: channel = 1, Only dealing with grayscale images.
-    n: number of
-    m: number of features.
-    """
-    logger.info("Downloading MNIST Dataset")
-
-    try:
-        subprocess.run(["python", "scripts/load_data.py"], check=True)
-    except subprocess.CalledProcessError as e:
-        logger.error("Error when retrieving data...", exc_info=True)
-        raise
-
-    with open("data/mnist_raw/train-images-idx3-ubyte.gz", "rb") as file:
-        raw_data = file.read()
-
-    data = np.frombuffer(raw_data)
-    print(data)
-
-    return DataLoader(data)
-
-
 def main() -> None:
 
     # Load Data
-    data_loader = get_data()
+    logger.info("Loading MNIST Dataset")
+
+    FILE_PATH = Path.cwd().parent / "tmp/mnist_raw/emnist-byclass-train.csv"
+    data = np.loadtxt("tmp/mnist_raw/emnist-byclass-train.csv", ",")
+
+    train, test = data[]
 
     # Define Model Structure
     layers = define_layers()  # Layers

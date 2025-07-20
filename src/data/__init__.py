@@ -1,3 +1,3 @@
-from .data_loader import DataLoader
+from .data_tools import train_test_split
 
-__all__ = ["DataLoader"]
+__all__ = ["train_test_split"]
