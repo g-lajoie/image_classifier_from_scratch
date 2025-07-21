@@ -10,6 +10,7 @@ from pathlib import Path
 import numpy as np
 from numpy.typing import NDArray
 
+from data.data_tools import batch_data, train_test_split
 from image_classifier.functions.activiation import RELU
 from image_classifier.functions.loss import CatCrossEntropy
 from image_classifier.layers import LayerStack, LinearLayer
@@ -23,6 +24,7 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 def define_layers() -> LayerStack:
@@ -53,9 +55,10 @@ def main() -> None:
     logger.info("Loading MNIST Dataset")
 
     FILE_PATH = Path.cwd().parent / "tmp/mnist_raw/emnist-byclass-train.csv"
-    data = np.loadtxt("tmp/mnist_raw/emnist-byclass-train.csv", ",")
+    data = np.loadtxt("tmp/mnist_raw/emnist-byclass-train.csv", delimiter=",")
+    train, val = train_test_split(data)
 
-    train, test = data[]
+    logger.info("Complete the load of the dataset")
 
     # Define Model Structure
     layers = define_layers()  # Layers
@@ -66,7 +69,10 @@ def main() -> None:
     model = NeuralNetwork(layers=layers, loss_func=loss_fn, optimizer=optim)
 
     for epoch in range(100):
-        for X_train, y_train in data_loader.train_batch:
+        for train in batch_data(train, batch_size=64):
+
+            X_train, y_train = train[:1, :], train[1:, :]
+
             # Load data to the model
             model.X = X_train
             model.y = y_train
