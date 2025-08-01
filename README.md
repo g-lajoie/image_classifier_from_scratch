@@ -1,6 +1,6 @@
 # ImageNet Classifier from Scratch (ICS-Net)
 
-This project is a **feedforward neural network** implemented **from scratch using only NumPy**, designed to perform **multiclass classification** on the [EMNIST dataset](https://www.nist.gov/itl/products-and-services/emnist-dataset). It demonstrates how core neural network principles — such as forward propagation, backpropagation, gradient descent, and activation functions — can be implemented without using any deep learning libraries like TensorFlow or PyTorch.
+This project is a **feedforward neural network** implemented **from scratch using only NumPy**, designed to perform **multiclass classification** on the [EMNIST dataset](https://www.nist.gov/itl/products-and-services/emnist-dataset). It demonstrates how core neural network principles — such as forward propagation, backpropagation, gradient descent, and activation functions
 
 ## Features
 
@@ -28,5 +28,5 @@ The architecture is fully configurable in code, by default it consist of
 
 Uses ReLU for hidden layers and output raw logits. Uses the softmax with categorical cross entropy loss function to evaluate the model.
 
-## Author 
+## Author
 Create by g-lajoie.

@@ -99,7 +99,17 @@ local_settings.py
 load_data.py
 
 # Temp Files
-/tmp
+tmp/
 
 # Notebooks
-/notebooks
+notebooks/
+
+# Docker Files
+docker-compose.yml
+
+# Other
+pyspark_apps/
+minio-data/
+
+# Make Files
+makefile

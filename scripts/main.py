@@ -9,6 +9,7 @@ from pathlib import Path
 
 import numpy as np
 from numpy.typing import NDArray
+from pyarrow import parquet
 
 from data.data_tools import batch_data, train_test_split
 from image_classifier.functions.activiation import RELU
@@ -49,14 +50,10 @@ def define_layers() -> LayerStack:
     return layers
 
 
-def main() -> None:
+def main(data) -> None:
 
     # Load Data
     logger.info("Loading MNIST Dataset")
-
-    FILE_PATH = Path.cwd().parent / "tmp/mnist_raw/emnist-byclass-train.csv"
-    data = np.loadtxt("tmp/mnist_raw/emnist-byclass-train.csv", delimiter=",")
-    train, val = train_test_split(data)
 
     logger.info("Complete the load of the dataset")
 
@@ -69,7 +66,7 @@ def main() -> None:
     model = NeuralNetwork(layers=layers, loss_func=loss_fn, optimizer=optim)
 
     for epoch in range(100):
-        for train in batch_data(train, batch_size=64):
+        for train in batch_data(data, batch_size=64):
 
             X_train, y_train = train[:1, :], train[1:, :]
 
@@ -95,4 +92,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+
+    # Load Data
+    data = parquet
+    main(data)
