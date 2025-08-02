@@ -106,6 +106,8 @@ notebooks/
 
 # Docker Files
 docker-compose.yml
+Dockerfile
+Dockerfile.*
 
 # Other
 pyspark_apps/
