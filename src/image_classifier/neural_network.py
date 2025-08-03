@@ -11,7 +11,7 @@ from typing import cast
 import numpy as np
 
 from image_classifier.common.parameters import Param
-from image_classifier.functions.loss.base_loss_function import LossFunction
+from image_classifier.functions.loss_functions.base_loss_function import LossFunction
 from image_classifier.layer_stack import LayerStack
 from image_classifier.layers import LinearLayer
 from image_classifier.layers.base_layers import Layer

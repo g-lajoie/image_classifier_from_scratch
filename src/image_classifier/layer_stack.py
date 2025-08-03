@@ -1,4 +1,7 @@
-from src.image_classifier.layers.base_layers import Layer
+from typing import cast
+
+from image_classifier.layers import LinearLayer
+from image_classifier.layers.base_layers import Layer
 
 
 class LayerStack:
@@ -13,16 +16,28 @@ class LayerStack:
         self.layers = layers
 
         # Initialization Methods
-        self.set_layer_hierarchy()
+        for idx in range(len(self.layers)):
+            self.set_parent_layers(idx)
+            self.set_weight_initalization_method(idx)
 
-    def set_layer_hierarchy(self):
+    def set_parent_layers(self, idx: int) -> None:
         """
-        Helper function that set next layer attribute of each layer.
+        Helper function that set the parent layer.
         """
 
-        for i in range(len(self.layers)):
-            if i != 0:
-                self.layers[i].parent_layer = self.layers[i - 1]
+        if idx != 0:
+            self.layers[idx].parent_layer = self.layers[idx - 1]
 
-            if i != len(self.layers) - 1:
-                self.layers[i].child_layer = self.layers[i + 1]
+    def set_child_layers(self, idx: int) -> None:
+        """
+        Helper function that sets the children layer.
+        """
+        if idx != len(self.layers) - 1:
+            self.layers[idx].child_layer = self.layers[idx + 1]
+
+    def set_weight_initalization_method(self, idx: int) -> None:
+        """
+        Add the corresponding weight initialization methods for the layers
+        """
+
+        if isinstance(self.layers[idx], LinearLayer) & isinstance(self.layers[idx + 1], RELU)

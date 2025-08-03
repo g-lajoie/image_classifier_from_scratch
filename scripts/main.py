@@ -11,10 +11,11 @@ import numpy as np
 from numpy.typing import NDArray
 from pyarrow import parquet
 
-from data.data_tools import batch_data, train_test_split
+from image_classifier import LayerStack
+from image_classifier.data_tools import batch_data, train_test_split
 from image_classifier.functions.activiation import RELU
 from image_classifier.functions.loss import CatCrossEntropy
-from image_classifier.layers import LayerStack, LinearLayer
+from image_classifier.layers import LinearLayer
 from image_classifier.layers.weights_initialization import WeightInitMethod
 from image_classifier.neural_network import NeuralNetwork
 from image_classifier.optimizer import Adam

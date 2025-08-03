@@ -3,14 +3,25 @@ from numpy.typing import NDArray
 
 
 def train_test_split(
-    data: NDArray, train_amount: float = 0.8
+    data: NDArray, train_amount: float = 0.8, test_amount: float = 0.2
 ) -> tuple[NDArray, NDArray]:
     """
     Train, test split to split the data into X_train, X_test, y_train, y_test
     """
 
-    parition_index = int(data.shape[0] * train_amount)
-    return data[:parition_index, :], data[parition_index + 1 :, :]
+    if train_amount:
+        _test_amount = test_amount
+
+    elif train_amount:
+        _test_amount = 1 - train_amount
+
+    else:
+        _test_amount = 0.0
+
+    _test_amount = int(_test_amount)
+
+    train, test = data[:_test_amount, :], data[_test_amount + 1 :, :]
+    return train, test
 
 
 def batch_data(data: NDArray, batch_size: int):
