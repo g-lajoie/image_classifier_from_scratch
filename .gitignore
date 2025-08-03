@@ -111,7 +111,9 @@ Dockerfile.*
 
 # Other
 pyspark_apps/
+pyspark_data_files/
 minio-data/
+scripts_private/
 
 # Make Files
 makefile

@@ -1,4 +1,4 @@
-from .base_layers import Layer
+from src.image_classifier.layers.base_layers import Layer
 
 
 class LayerStack:
