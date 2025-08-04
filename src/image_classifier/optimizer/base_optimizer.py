@@ -19,16 +19,16 @@ class Optimizer:
         return self._model_parameters
 
     @model_parameters.setter
-    def model_parameters(self, model_params: list[Param]):
-        if not isinstance(model_params, list) and not all(
-            [True for param in model_params if isinstance(param, Param)]
+    def model_parameters(self, new_model_params_value: list[Param]):
+        if not isinstance(new_model_params_value, list) and not all(
+            [True for param in new_model_params_value if isinstance(param, Param)]
         ):
 
             raise ValueError(
                 "The type for model params is incorrect. Expected list[Param]"
             )
 
-        self._model_parameters = model_params
+        self._model_parameters = new_model_params_value
 
     @abstractmethod
     def step(self, *args, **kwargs):

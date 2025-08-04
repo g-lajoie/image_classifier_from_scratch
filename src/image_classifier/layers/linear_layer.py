@@ -26,19 +26,20 @@ class LinearLayer(Layer):
 
     def __init__(
         self,
-        inp: Optional[Param] = None,
-        u_out: Optional[int] = None,
+        output_units: int,
         parent_layer: Optional[Layer] = None,
         next_layer: Optional[Layer] = None,
         *args,
         **kwargs,
     ):
+        super().__init__()
+
         # Layer Variables
         self.weights: Optional[Param] = None
         self.bias: Optional[Param] = None
 
         # Graph Variables
-        self._u_out = u_out
+        self._output_units = output_units
         self._parent_layer = parent_layer
         self._next_layer = next_layer
 
@@ -59,16 +60,21 @@ class LinearLayer(Layer):
             logger.error("weight_init attribute is required")
             raise
 
+        if self.output_units is None:
+            logger.error("The output units must be set.")
+            raise
+
         if self.weights is None:
             self.weights = Param(
-                self.weight_init_method.init_weights(self.inp, self.u_out),
+                self.weight_init_method.init_weights(self.inp, self.output_units),
                 "Weight",
             )
 
         if self.bias is None:
             self.bias = Param(np.zeros(self.weights.shape[-1]), "bias vector")
 
-        return np.dot(self.inp, self.weights) + self.bias
+        self.output = np.dot(self.inp, self.weights) + self.bias
+        return self.output
 
     def backward(self):
         """

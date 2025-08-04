@@ -8,24 +8,10 @@ from numpy.typing import NDArray
 
 from image_classifier.common.parameters import Param
 from image_classifier.weight_initializers.base_weight_initialization import (
-    BaseWeightInitializationMethod,
+    WeightInitializationMethod,
 )
 
 logger = logging.getLogger(__name__)
-
-
-class WeightInitializationMethod(ABC):
-
-    @abstractmethod
-    def init_weights(self, X: Param, _out: int) -> NDArray:
-        """
-        Arguments
-            X: Variable
-            _out: int
-
-        Return: NDArray
-        """
-        raise NotImplementedError("The init weights method has not been created.")
 
 
 class RandomInitMethod(WeightInitializationMethod):

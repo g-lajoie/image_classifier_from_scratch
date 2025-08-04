@@ -8,13 +8,13 @@ from numpy.typing import NDArray
 
 from image_classifier.common.parameters import Param
 from image_classifier.weight_initializers.base_weight_initialization import (
-    BaseWeightInitializationMethod,
+    WeightInitializationMethod,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class KassingInitMethod(BaseWeightInitializationMethod):
+class KassingInitMethod(WeightInitializationMethod):
 
     def __init__(self):
         """
@@ -22,6 +22,9 @@ class KassingInitMethod(BaseWeightInitializationMethod):
         """
 
         self.random = np.random.Generator(PCG64())
+
+    def __repr__(self):
+        return "KassingInitMethod"
 
     def init_weights(self, X: Param, _out: int) -> NDArray:
         """
@@ -42,7 +45,5 @@ class KassingInitMethod(BaseWeightInitializationMethod):
         """
 
         _in = X.shape[1]  # previous layer's units, or input features.
-
-        return self.random.normal(0, (2 / _in), size=(_in, _out))
 
         return self.random.normal(0, (2 / _in), size=(_in, _out))

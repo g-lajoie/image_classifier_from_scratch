@@ -16,8 +16,8 @@ class RELU(Layer):
     ReLU: Rectified Linear Unit
     """
 
-    def __init__(self, ind_var=None):
-        pass
+    def __init__(self):
+        super().__init__()
 
     @property
     def param_dict(self) -> dict[str, Param]:
@@ -31,7 +31,8 @@ class RELU(Layer):
         """
         Caclulates the ReLU function.
         """
-        return np.maximum(0, self.inp)
+        self.output = np.maximum(0, self.inp)
+        return self.output
 
     def backward(self):
         """

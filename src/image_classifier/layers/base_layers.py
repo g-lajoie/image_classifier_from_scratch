@@ -6,7 +6,9 @@ import numpy as np
 from numpy.typing import NDArray
 
 from image_classifier.common import Param
-from image_classifier.common.enums import WeightInitMethod
+from image_classifier.weight_initializers.base_weight_initialization import (
+    WeightInitializationMethod,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -23,10 +25,10 @@ class Layer(ABC):
     def __init__(self):
         self._inp: Optional[Param] = None
         self._output: Optional[Param] = None
-        self._u_out: Optional[int] = None
+        self._output_units: Optional[int] = None
         self._parent_layer: Optional["Layer"] = None
         self._next_layer: Optional["Layer"] = None
-        self._weight_init_method: Optional[WeightInitMethod] = None
+        self._weight_init_method: Optional[WeightInitializationMethod] = None
 
     @property
     def inp(self) -> Param:
@@ -91,25 +93,25 @@ class Layer(ABC):
         raise TypeError("The output variable must be of type NDArray or Params")
 
     @property
-    def u_out(self) -> int:
+    def output_units(self) -> int:
         """
         Number of output units for this layer.
         """
-        if self._u_out is None:
-            logger.error("Output units (u_out) have not been defined.")
-            raise ValueError("u_out is None")
+        if self._output_units is None:
+            logger.error("Output units have not been defined.")
+            raise ValueError("output units is None")
 
-        return cast(int, self._u_out)
+        return cast(int, self._output_units)
 
-    @u_out.setter
-    def u_out(self, num_of_units: int):
+    @output_units.setter
+    def output_units(self, num_of_units: int):
         """
         Sets the number of output units for the layer.
         """
         if isinstance(num_of_units, int):
-            self._u_out = num_of_units
+            self._output_units = num_of_units
         elif isinstance(num_of_units, float):
-            self._u_out = int(num_of_units)
+            self._output_units = int(num_of_units)
         elif num_of_units is None:
             logger.error("u_out cannot be None.")
             raise ValueError("u_out is None")
@@ -170,7 +172,7 @@ class Layer(ABC):
         self._next_layer = new_child_layer_value
 
     @property
-    def weight_init_method(self) -> WeightInitMethod | None:
+    def weight_init_method(self) -> WeightInitializationMethod | None:
         """
         Return the weight init method.
         """
@@ -181,9 +183,9 @@ class Layer(ABC):
         """
         Setter function for the weight init method
         """
-        if isinstance(weight_init_method_value, WeightInitMethod):
+        if not isinstance(weight_init_method_value, WeightInitializationMethod):
             logger.error(
-                f"Expected objec to tbe of a Weight Init method. The {weight_init_method_value} is not valid"
+                f"Expected object to be of type WeightInitializationMethod. The {weight_init_method_value} is not valid"
             )
 
         self._weight_init_method = weight_init_method_value

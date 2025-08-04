@@ -14,16 +14,17 @@ class Adam(Optimizer):
     """
 
     def __init__(self):
+        super().__init__()
+
         self.beta_1: float = 0.9
         self.beta_2: float = 0.999
         self.alpha: float = 0.01
         self.epsilon: float = 1e-8
         self.t = 0
 
+    def step(self):
         self.m = {param: np.zeros_like(param.value) for param in self.model_parameters}
         self.v = {param: np.zeros_like(param.value) for param in self.model_parameters}
-
-    def step(self):
 
         self.t += 1
         for param in self.model_parameters:
