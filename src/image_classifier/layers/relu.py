@@ -6,13 +6,12 @@ import numpy as np
 from numpy.typing import NDArray
 
 from image_classifier.common.parameters import Param
-
-from .base_activation_function import ActivationFunction
+from image_classifier.layers.base_layers import Layer
 
 logger = logging.getLogger(__name__)
 
 
-class RELU(ActivationFunction):
+class RELU(Layer):
     """
     ReLU: Rectified Linear Unit
     """

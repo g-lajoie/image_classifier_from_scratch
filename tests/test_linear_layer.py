@@ -4,14 +4,14 @@ from numpy.typing import NDArray
 
 from image_classifier.functions.activiation import RELU
 from image_classifier.layers.linear_layer import LinearLayer
-from image_classifier.layers.weights_initialization import RandomInitializer
+from image_classifier.layers.weights_initialization_method import RandomInitMethod
 
 random_generator = Generator(PCG64())
 
 
 class TestLinearLayer:
 
-    random_init = RandomInitializer()
+    random_init = RandomInitMethod()
     activation_fn = RELU()
 
     def test_linear_layer_output_shape(self):

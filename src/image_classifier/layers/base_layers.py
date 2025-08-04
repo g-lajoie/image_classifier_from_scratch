@@ -6,6 +6,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from image_classifier.common import Param
+from image_classifier.common.enums import WeightInitMethod
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,7 @@ class Layer(ABC):
         self._u_out: Optional[int] = None
         self._parent_layer: Optional["Layer"] = None
         self._next_layer: Optional["Layer"] = None
+        self._weight_init_method: Optional[WeightInitMethod] = None
 
     @property
     def inp(self) -> Param:
@@ -166,6 +168,25 @@ class Layer(ABC):
             raise TypeError("child_layer must be a Layers instance")
 
         self._next_layer = new_child_layer_value
+
+    @property
+    def weight_init_method(self) -> WeightInitMethod | None:
+        """
+        Return the weight init method.
+        """
+        return self._weight_init_method
+
+    @weight_init_method.setter
+    def weight_init_method(self, weight_init_method_value) -> None:
+        """
+        Setter function for the weight init method
+        """
+        if isinstance(weight_init_method_value, WeightInitMethod):
+            logger.error(
+                f"Expected objec to tbe of a Weight Init method. The {weight_init_method_value} is not valid"
+            )
+
+        self._weight_init_method = weight_init_method_value
 
     @property
     @abstractmethod

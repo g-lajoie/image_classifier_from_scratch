@@ -13,10 +13,8 @@ from pyarrow import parquet
 
 from image_classifier import LayerStack
 from image_classifier.data_tools import batch_data, train_test_split
-from image_classifier.functions.activiation import RELU
-from image_classifier.functions.loss import CatCrossEntropy
-from image_classifier.layers import LinearLayer
-from image_classifier.layers.weights_initialization import WeightInitMethod
+from image_classifier.layers import RELU, LinearLayer
+from image_classifier.loss_functions import CatCrossEntropy
 from image_classifier.neural_network import NeuralNetwork
 from image_classifier.optimizer import Adam
 
@@ -39,11 +37,11 @@ def define_layers() -> LayerStack:
     )
 
     layers = LayerStack(
-        LinearLayer(u_out=128, weight_init_method=WeightInitMethod.HE),
+        LinearLayer(u_out=128),
         RELU(),
-        LinearLayer(u_out=256, weight_init_method=WeightInitMethod.HE),
+        LinearLayer(u_out=256),
         RELU(),
-        LinearLayer(u_out=10, weight_init_method=WeightInitMethod.XAVIER),
+        LinearLayer(u_out=10),
     )
 
     logger.info("Neural network layers successfully created.")

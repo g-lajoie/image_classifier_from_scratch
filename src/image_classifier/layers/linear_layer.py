@@ -5,12 +5,7 @@ from typing import Optional, cast
 import numpy as np
 from numpy.typing import NDArray
 
-from image_classifier.common.enums import WeightInitMethod
 from image_classifier.common.parameters import Param
-from image_classifier.layers.weights_initialization import (
-    RandomInitializer,
-    ScaledInitializer,
-)
 from image_classifier.utils.matrix_calculation_helpers import reshape_for_matmul
 
 from .base_layers import Layer
@@ -32,26 +27,12 @@ class LinearLayer(Layer):
     def __init__(
         self,
         inp: Optional[Param] = None,
-        weight_init_method: WeightInitMethod | None = None,
         u_out: Optional[int] = None,
         parent_layer: Optional[Layer] = None,
         next_layer: Optional[Layer] = None,
         *args,
         **kwargs,
     ):
-        # Weight Intialization Method
-        self.weight_init = None
-        self.weight_init_method: WeightInitMethod | None = weight_init_method
-
-        if weight_init_method == WeightInitMethod.RANDOM:
-            self.weight_init = RandomInitializer()
-
-        if (
-            weight_init_method == WeightInitMethod.XAVIER
-            or weight_init_method == WeightInitMethod.HE
-        ):
-            self.weight_init = ScaledInitializer(weight_init_method)
-
         # Layer Variables
         self.weights: Optional[Param] = None
         self.bias: Optional[Param] = None
@@ -74,13 +55,13 @@ class LinearLayer(Layer):
         Calculates the Linear Layer, to be used in the forward pass.
         """
 
-        if self.weight_init is None:
+        if self.weight_init_method is None:
             logger.error("weight_init attribute is required")
             raise
 
         if self.weights is None:
             self.weights = Param(
-                self.weight_init.init_weights(self.inp, self.u_out),
+                self.weight_init_method.init_weights(self.inp, self.u_out),
                 "Weight",
             )
 
@@ -119,6 +100,10 @@ class LinearLayer(Layer):
             self.weights.grad = (
                 reshape_for_matmul(d_weights, d_child_layer_grad) @ d_child_layer_grad
             )
+            self.inp.grad = (
+                reshape_for_matmul(d_inp, d_child_layer_grad) @ d_child_layer_grad
+            )
+            self.bias.grad = np.sum(d_bias, axis=0)
             self.inp.grad = (
                 reshape_for_matmul(d_inp, d_child_layer_grad) @ d_child_layer_grad
             )

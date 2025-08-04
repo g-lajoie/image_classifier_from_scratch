@@ -3,15 +3,15 @@ import pytest
 from numpy.random import PCG64
 from numpy.typing import NDArray
 
-from image_classifier.common.enums.weight_initialization_enum import WeightInitMethod
-from image_classifier.layers.weights_initialization import (
-    RandomInitializer,
-    ScaledInitializer,
+from image_classifier.layers.weights_initialization_method import (
+    HeInitMethod,
+    RandomInitMethod,
+    XaiverInitMethod,
 )
 
 
 def test_init_with_valud_enum():
-    model = ScaledInitializer(WeightInitMethod.XAVIER)
+    model = ScaledInitMethod(WeightInitMethod.XAVIER)
     assert model.initializer_method == WeightInitMethod.XAVIER
 
 
@@ -22,21 +22,21 @@ class TestReturnType:
     _out = 64
 
     def test_correct_return_type_random_initializer(self):
-        model = RandomInitializer()
+        model = RandomInitMethod()
         returned_value = model.init_weights(self.X, self._out)
         assert isinstance(
             returned_value, np.ndarray
         ), f"Exepcted NDArray instead got {type(returned_value)}"
 
     def test_correct_return_type_scaled_initializer_xaiver(self):
-        model = ScaledInitializer(weight_init_method=WeightInitMethod.XAVIER)
+        model = ScaledInitMethod(weight_init_method=WeightInitMethod.XAVIER)
         returned_value = model.init_weights(self.X, self._out)
         assert isinstance(
             returned_value, np.ndarray
         ), f"Exepcted NDArray instead got {type(returned_value)}"
 
     def test_correct_return_type_scaled_initializer_he(self):
-        model = ScaledInitializer(weight_init_method=WeightInitMethod.HE)
+        model = ScaledInitMethod(weight_init_method=WeightInitMethod.HE)
         returned_value = model.init_weights(self.X, self._out)
         assert isinstance(
             returned_value, np.ndarray

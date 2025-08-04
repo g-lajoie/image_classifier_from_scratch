@@ -1,7 +1,8 @@
 from typing import cast
 
-from image_classifier.layers import LinearLayer
+from image_classifier.layers import RELU, LinearLayer
 from image_classifier.layers.base_layers import Layer
+from image_classifier.weight_initializers import *
 
 
 class LayerStack:
@@ -40,4 +41,7 @@ class LayerStack:
         Add the corresponding weight initialization methods for the layers
         """
 
-        if isinstance(self.layers[idx], LinearLayer) & isinstance(self.layers[idx + 1], RELU)
+        if isinstance(self.layers[idx], LinearLayer) & isinstance(
+            self.layers[idx + 1], RELU
+        ):
+            self.layers[idx].weight_init_method = KassingInitMethod
