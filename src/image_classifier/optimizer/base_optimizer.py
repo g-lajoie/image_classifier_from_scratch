@@ -22,7 +22,7 @@ class Optimizer:
         ):
 
             raise ValueError(
-                "The type for model params is incorrect. Expected list[Param]"
+                "The type for model params is incorrect. Expec ted list[Param]"
             )
 
         self._model_parameters = new_model_params_value

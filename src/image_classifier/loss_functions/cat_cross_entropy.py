@@ -7,7 +7,7 @@ from image_classifier.layers.base_layers import Layer
 from .base_loss_function import LossFunction
 
 
-class CatCrossEntropy(LossFunction):
+class CategoricalCrossEntropy(LossFunction):
     """
     Categorical Cross Entropy
     """

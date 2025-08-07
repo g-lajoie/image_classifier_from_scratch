@@ -7,7 +7,7 @@ from image_classifier.common import Param
 from image_classifier.layers.base_layers import Layer
 
 
-class LossFunction(Layer):
+class LossFunction:
     """
     Interface for loss functions.
     """
