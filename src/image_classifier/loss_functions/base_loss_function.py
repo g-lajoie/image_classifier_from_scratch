@@ -13,7 +13,7 @@ class LossFunction(Layer):
     """
 
     @abstractmethod
-    def forward(self, y_true: NDArray, *args, **kwargs):
+    def calculate(self, y_true: NDArray, *args, **kwargs):
         """
         Abstract method, overwritten for loss functions.
         """

@@ -13,8 +13,8 @@ class Adam(Optimizer):
     The ADAM optimizer.
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, model_parameters):
+        self.model_parameters = model_parameters
 
         self.beta_1: float = 0.9
         self.beta_2: float = 0.999

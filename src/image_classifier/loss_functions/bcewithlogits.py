@@ -17,24 +17,27 @@ class BCEWithLogits(LossFunction):
     Binary Cross Entropy with Logit Loss
     """
 
+    def __init__(self, inp: Param):
+        self.input = inp
+
     @property
     def param_dict(self) -> dict[str, Param]:
         """
         Dictionary of all variables in this layer.
         """
 
-        return {"ind_var": self.inp}
+        return {"ind_var": self.input}
 
-    def forward(self, y_true: NDArray) -> np.ndarray:
+    def calculate(self, y_true: NDArray) -> np.ndarray:
         """
         Binary Cross Entropy with Logit Loss
 
         Arguments
-            x: Input of the function, from previous hidden layer.
+            x: inp of the function, from previous hidden layer.
             y: Labels.
         """
 
-        return -(y_true * np.log(self.sigmoid_function(self.inp)))
+        return -(y_true * np.log(self.sigmoid_function(self.input)))
 
     def sigmoid_function(self, X: Param) -> NDArray:
         """
@@ -42,11 +45,11 @@ class BCEWithLogits(LossFunction):
         x: Variable. Derivied from previous hidden layer.
         Return: NDArray
         """
-        if self.inp.value is None:
-            logger.error("The value for %s cannot be none", self.inp.label)
-            raise ValueError(f"Value for {self.inp.label} is none")
+        if self.input.value is None:
+            logger.error("The value for %s cannot be none", self.input.label)
+            raise ValueError(f"Value for {self.input.label} is none")
 
-        return 1 / (1 + np.exp(-self.inp.value))
+        return 1 / (1 + np.exp(-self.input.value))
 
     def backward(self, x: Param, y: NDArray) -> np.ndarray:
         return np.zeros_like(0)

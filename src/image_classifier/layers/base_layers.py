@@ -6,6 +6,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from image_classifier.common import Param
+from image_classifier.layers.base_layers import Layer
 from image_classifier.weight_initializers.base_weight_initialization import (
     WeightInitializationMethod,
 )
@@ -22,50 +23,44 @@ class Layer(ABC):
     and standardizes common interface for handling input/output variables and graph connectivity.
     """
 
-    def __init__(self):
-        self._inp: Optional[Param] = None
-        self._output: Optional[Param] = None
-        self._output_units: Optional[int] = None
-        self._parent_layer: Optional["Layer"] = None
-        self._next_layer: Optional["Layer"] = None
-        self._weight_init_method: Optional[WeightInitializationMethod] = None
-
     @property
-    def inp(self) -> Param:
+    def input(self) -> Param:
         """
         The independent (input) variable of the layer.
         """
         if self._parent_layer is not None and isinstance(self._parent_layer, Param):
-            self._inp = self._parent_layer.output
+            self._input = self._parent_layer.output
 
-        if self._inp is None:
-            logger.error("Input variable (inp) has not been set.")
-            raise ValueError("inp is None")
+        if self._input is None:
+            raise ValueError("Input variable (input) has not been set.")
 
-        if not isinstance(self._inp, Param):
+        if not isinstance(self._input, (np.ndarray, Layer)):
             logger.error(
                 "Expected inp of type <Variable>, got <%s>",
-                type(self._inp),
+                type(self._input),
                 exc_info=True,
             )
             raise TypeError("Invalid type for inp")
 
-        return self._inp
+        return self._input
 
-    @inp.setter
-    def inp(self, new_inp_value: Param):
+    @input.setter
+    def input(self, new_input_value: Param):
         """
         Sets the independent (input) variable of the layer.
         """
-        if not isinstance(new_inp_value, Param):
+        if not isinstance(new_input_value, (np.ndarray, Param)):
             logger.error(
-                "inp must be of type <Variable>, got <%s>",
-                type(new_inp_value),
+                "inp must be of type <NDArray or Param>, got <%s>",
+                type(new_input_value),
                 exc_info=True,
             )
             raise TypeError("inp must be a Variable")
 
-        self._inp = new_inp_value
+        if not new_input_value:
+            raise ValueError("The new input value is None")
+
+        self._input = new_input_value
 
     @property
     def output(self) -> Param:
@@ -85,36 +80,39 @@ class Layer(ABC):
         """
 
         if isinstance(new_output_value, np.ndarray):
-            return Param(new_output_value, "output")
+            self._output = Param(new_output_value, "output")
 
         if isinstance(new_output_value, Param):
-            return Param
+            self._output = new_output_value
 
         raise TypeError("The output variable must be of type NDArray or Params")
 
     @property
-    def output_units(self) -> int:
+    def units(self) -> int:
         """
         Number of output units for this layer.
         """
-        if self._output_units is None:
+        if self.units is None:
             logger.error("Output units have not been defined.")
             raise ValueError("output units is None")
 
-        return cast(int, self._output_units)
+        return cast(int, self._units)
 
-    @output_units.setter
-    def output_units(self, num_of_units: int):
+    @units.setter
+    def units(self, num_of_units: int):
         """
         Sets the number of output units for the layer.
         """
         if isinstance(num_of_units, int):
-            self._output_units = num_of_units
+            self._units = num_of_units
+
         elif isinstance(num_of_units, float):
-            self._output_units = int(num_of_units)
+            self._units = int(num_of_units)
+
         elif num_of_units is None:
             logger.error("u_out cannot be None.")
             raise ValueError("u_out is None")
+
         else:
             logger.error(
                 "Expected u_out as int or float, got <%s>",
@@ -202,10 +200,10 @@ class Layer(ABC):
         )
 
     @abstractmethod
-    def forward(self, *args, **kwargs):
+    def forward(self, *args, **kwargs) -> None:
         """
         Abstract method to perform the forward pass of the layer.
-        Should return the output variable.
+        Should assign the value of the calculation to self.output
         """
         raise NotImplementedError(
             "The 'forward' method must be implemented by subclass."

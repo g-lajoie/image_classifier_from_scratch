@@ -8,9 +8,6 @@ class Optimizer:
     Interface for optimizer classes.
     """
 
-    def __init__(self):
-        self._model_parameters = None
-
     @property
     def model_parameters(self) -> list[Param]:
         if self._model_parameters is None:

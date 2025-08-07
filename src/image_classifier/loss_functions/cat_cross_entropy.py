@@ -12,28 +12,31 @@ class CatCrossEntropy(LossFunction):
     Categorical Cross Entropy
     """
 
+    def __init__(self, inp: Param):
+        self.input = inp
+
     @property
     def param_dict(self) -> dict[str, Param]:
         """
         Dictionary of params
         """
 
-        return {"inp": self.inp}
+        return {"inp": self.input}
 
-    def forward(self, y_true: np.ndarray, error=1e-8) -> np.ndarray:
+    def calculate(self, y_true: np.ndarray, error=1e-8) -> np.ndarray:
         """
         Categorical Cross Entropy function.
         """
 
-        y_pred = self.softmax(self.inp)
+        y_pred = self.softmax(self.input)
         return -np.sum(y_pred * np.log(y_pred + error))
 
     def backward(self, y_true: np.ndarray):
         """
-        Deravative for the Categorical Cross Entropy Function
+        Derivative for the Categorical Cross Entropy Function
         """
 
-        self.inp.grad = self.inp - y_true
+        self.input.grad = self.input - y_true
 
     def softmax(self, X: Param) -> np.ndarray:
         """

@@ -16,8 +16,10 @@ class RELU(Layer):
     ReLU: Rectified Linear Unit
     """
 
-    def __init__(self):
+    def __init__(self, input: Layer):
         super().__init__()
+
+        self.input = input.output
 
     @property
     def param_dict(self) -> dict[str, Param]:
@@ -25,13 +27,14 @@ class RELU(Layer):
         List of all the parameters for the layer
         """
 
-        return {"ind_var": self.inp}
+        return {"ind_var": self.input}
 
-    def forward(self):
+    def forward(self) -> None:
         """
         Caclulates the ReLU function.
         """
-        self.output = np.maximum(0, self.inp)
+
+        self.output = np.maximum(0, self.input)
         return self.output
 
     def backward(self):
@@ -39,15 +42,17 @@ class RELU(Layer):
         Calculate the dervative for the RELU funcion.
         """
 
-        if self.inp.value is None:
-            logger.error("The value for the %s cannot be None.", self.inp.label)
-            raise ValueError(f"The value for {self.inp.label} is none.")
+        if self.input.value is None:
+            logger.error("The value for the %s cannot be None.", self.input.label)
+            raise ValueError(f"The value for {self.input.label} is none.")
 
         if self.child_layer is None:
             logger.error(
                 "The child layer for the RELU layer cannot be None. ReLU is a hidden layer.",
-                self.inp.label,
+                self.input.label,
             )
             raise ValueError(f"The child layer for ReLU is none.")
 
-        self.inp.grad = (self.inp.value > 0).astype(float) @ self.child_layer.inp.grad
+        self.input.grad = (self.input.value > 0).astype(
+            float
+        ) @ self.child_layer.input.grad
