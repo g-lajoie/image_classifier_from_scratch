@@ -16,10 +16,22 @@ class RELU(Layer):
     ReLU: Rectified Linear Unit
     """
 
-    def __init__(self, input: Layer):
+    def __init__(self, previous_layer: Layer, label: str):
         super().__init__()
 
-        self.input = input.output
+        if previous_layer is None:
+            raise ValueError("The previous layer for {self.label} is None")
+
+        self.X: Param = Param(
+            np.zeros_like(previous_layer.X.value, dtype=np.float32),
+            label=f"RELU: {self.label}",
+        )
+        self.parent_layer = previous_layer
+        self.units = previous_layer.units
+        self.label = label
+
+    def __repr__(self):
+        return f"<self.label>: RELU Layer - Units:{self.units}"
 
     @property
     def param_dict(self) -> dict[str, Param]:
@@ -27,32 +39,27 @@ class RELU(Layer):
         List of all the parameters for the layer
         """
 
-        return {"ind_var": self.input}
+        return {"ind_var": self.X}
 
-    def forward(self) -> None:
+    def forward(self) -> NDArray:
         """
         Caclulates the ReLU function.
         """
 
-        self.output = np.maximum(0, self.input)
-        return self.output
+        if not self.parent_layer:
+            raise ValueError("Parent layer's forward method has not been computed")
 
-    def backward(self):
+        self.X.value = self.parent_layer.output
+
+        return np.maximum(0, self.X.value)
+
+    def backward(self, previous_layer: Layer):
         """
         Calculate the dervative for the RELU funcion.
         """
 
-        if self.input.value is None:
-            logger.error("The value for the %s cannot be None.", self.input.label)
-            raise ValueError(f"The value for {self.input.label} is none.")
+        if self.X.value is None:
+            logger.error("The value for the %s cannot be None.", self.X.label)
+            raise ValueError(f"The value for {self.X.label} is none.")
 
-        if self.child_layer is None:
-            logger.error(
-                "The child layer for the RELU layer cannot be None. ReLU is a hidden layer.",
-                self.input.label,
-            )
-            raise ValueError(f"The child layer for ReLU is none.")
-
-        self.input.grad = (self.input.value > 0).astype(
-            float
-        ) @ self.child_layer.input.grad
+        self.X.grad = (self.X.value > 0).astype(float) @ previous_layer.X.grad

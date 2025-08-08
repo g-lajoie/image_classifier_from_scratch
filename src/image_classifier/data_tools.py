@@ -19,3 +19,17 @@ def batch_data(data: NDArray, batch_size: int):
     """
 
     return [data[i : i + 1] for i in range(0, len(data), batch_size)]
+
+
+def one_hot_encoding(data: NDArray, number_of_classes: int) -> np.ndarray:
+    """
+    One hot encode the data
+    """
+
+    if data.size != 1:
+        ValueError(
+            "The dimension for data is less than 0, or greater than 1, another implementaion of one-hot-encoding is required"
+        )
+
+    one_hot = np.zeros((data.size, number_of_classes), dtype=np.float32)
+    return one_hot[np.arange(data.size), data]

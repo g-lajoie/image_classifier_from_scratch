@@ -6,7 +6,6 @@ import numpy as np
 from numpy.typing import NDArray
 
 from image_classifier.common import Param
-from image_classifier.layers.base_layers import Layer
 from image_classifier.weight_initializers.base_weight_initialization import (
     WeightInitializationMethod,
 )
@@ -23,76 +22,68 @@ class Layer(ABC):
     and standardizes common interface for handling input/output variables and graph connectivity.
     """
 
+    def __init__(self):
+        self._label = None
+        self._X = None
+        self._units = None
+        self._parent_layer = None
+
     @property
-    def input(self) -> Param:
+    def label(self) -> str | None:
+        """
+        The label of the layer
+        """
+
+        return self._label
+
+    @label.setter
+    def label(self, new_label: str) -> None:
+        """
+        The setter function for the label
+        """
+
+        self._label = new_label
+
+    @property
+    def X(self) -> Param:
         """
         The independent (input) variable of the layer.
         """
-        if self._parent_layer is not None and isinstance(self._parent_layer, Param):
-            self._input = self._parent_layer.output
 
-        if self._input is None:
-            raise ValueError("Input variable (input) has not been set.")
-
-        if not isinstance(self._input, (np.ndarray, Layer)):
-            logger.error(
-                "Expected inp of type <Variable>, got <%s>",
-                type(self._input),
-                exc_info=True,
+        if not isinstance(self._X, (np.ndarray, Param)):
+            raise TypeError(
+                f"Expected input variable (X) of type <NDArray or Param>, got <{type(self._X).__name__}>"
             )
-            raise TypeError("Invalid type for inp")
 
-        return self._input
+        return self._X
 
-    @input.setter
-    def input(self, new_input_value: Param):
+    @X.setter
+    def X(self, new_X: Param):
         """
         Sets the independent (input) variable of the layer.
         """
-        if not isinstance(new_input_value, (np.ndarray, Param)):
-            logger.error(
-                "inp must be of type <NDArray or Param>, got <%s>",
-                type(new_input_value),
-                exc_info=True,
+
+        if not isinstance(new_X, (np.ndarray, Param)):
+            raise TypeError(
+                f"Input variable (X) must be of type <NDArray or Param>, got <{type(new_X).__name__}>"
             )
-            raise TypeError("inp must be a Variable")
 
-        if not new_input_value:
-            raise ValueError("The new input value is None")
-
-        self._input = new_input_value
+        self._X = new_X
 
     @property
-    def output(self) -> Param:
+    def output(self) -> NDArray:
         """
         The dependent (output) variable of the layer, computed by the forward method.
         """
-        if self._output is None:
-            logger.error("Output variable has not set.")
-            raise ValueError("output is None")
 
-        return self._output
-
-    @output.setter
-    def output(self, new_output_value: NDArray | Param):
-        """
-        Sets the dependent (output) variable of the layer.
-        """
-
-        if isinstance(new_output_value, np.ndarray):
-            self._output = Param(new_output_value, "output")
-
-        if isinstance(new_output_value, Param):
-            self._output = new_output_value
-
-        raise TypeError("The output variable must be of type NDArray or Params")
+        return self.forward()
 
     @property
     def units(self) -> int:
         """
         Number of output units for this layer.
         """
-        if self.units is None:
+        if self._units is None:
             logger.error("Output units have not been defined.")
             raise ValueError("output units is None")
 
@@ -126,8 +117,7 @@ class Layer(ABC):
         """
         Returns the previous layer in the network (if any).
         """
-        if self._parent_layer is None:
-            logger.warning("Parent layer has not been set.")
+
         return self._parent_layer
 
     @parent_layer.setter
@@ -146,49 +136,6 @@ class Layer(ABC):
         self._parent_layer = new_parent_layer_value
 
     @property
-    def child_layer(self) -> Optional["Layer"]:
-        """
-        Returns the next layer in the network (if any).
-        """
-        if self._next_layer is None:
-            logger.warning("Child layer has not been set.")
-        return self._next_layer
-
-    @child_layer.setter
-    def child_layer(self, new_child_layer_value: "Layer"):
-        """
-        Sets the next layer in the network.
-        """
-        if not isinstance(new_child_layer_value, Layer):
-            logger.error(
-                "Expected child_layer of type <Layers>, got <%s>",
-                type(new_child_layer_value),
-                exc_info=True,
-            )
-            raise TypeError("child_layer must be a Layers instance")
-
-        self._next_layer = new_child_layer_value
-
-    @property
-    def weight_init_method(self) -> WeightInitializationMethod | None:
-        """
-        Return the weight init method.
-        """
-        return self._weight_init_method
-
-    @weight_init_method.setter
-    def weight_init_method(self, weight_init_method_value) -> None:
-        """
-        Setter function for the weight init method
-        """
-        if not isinstance(weight_init_method_value, WeightInitializationMethod):
-            logger.error(
-                f"Expected object to be of type WeightInitializationMethod. The {weight_init_method_value} is not valid"
-            )
-
-        self._weight_init_method = weight_init_method_value
-
-    @property
     @abstractmethod
     def param_dict(self, *args, **kwargs) -> dict[str, Param]:
         """
@@ -200,7 +147,7 @@ class Layer(ABC):
         )
 
     @abstractmethod
-    def forward(self, *args, **kwargs) -> None:
+    def forward(self, *args, **kwargs) -> NDArray:
         """
         Abstract method to perform the forward pass of the layer.
         Should assign the value of the calculation to self.output

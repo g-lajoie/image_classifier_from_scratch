@@ -6,16 +6,14 @@ Responsible for:
 """
 
 import logging
-from typing import Iterable, cast
+from typing import cast
 
 import numpy as np
 from numpy.typing import NDArray
 
-from image_classifier.common.parameters import Param
-from image_classifier.layers import LinearLayer
+from image_classifier.layers import RELU, LinearLayer
 from image_classifier.layers.base_layers import Layer
-from image_classifier.loss_functions.base_loss_function import LossFunction
-from image_classifier.optimizer.base_optimizer import Optimizer
+from image_classifier.weight_initializers import KassingInitMethod, XaiverInitMethod
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +33,27 @@ class NeuralNetwork:
         **kwargs,
     ):
         # Layers
-        self.layers = layers
+        self.layers: list[Layer] = layers
+        self.output: NDArray[np.float32] = np.zeros_like(layers[-1].X.value)
+
+        # Initialize Weights
+        self._initialize_weight_init_methods()
+
+    def _initialize_weight_init_methods(self):
+
+        for i in range(len(self.layers)):
+            if i == 0:
+                pass
+
+            if isinstance(self.layers[i], RELU) and isinstance(
+                self.layers[i - 1], LinearLayer
+            ):
+                previous_layer = cast(LinearLayer, self.layers[i - 1])
+                previous_layer.weight_init_method = KassingInitMethod()
+
+            if i == len(self.layers) - 1 and isinstance(self.layers[-1], LinearLayer):
+                current_layer: Layer = self.layers[-1]
+                current_layer.weight_init_method = XaiverInitMethod()
 
     @property
     def parameters(self):
@@ -48,27 +66,9 @@ class NeuralNetwork:
 
         return params
 
-    def forward(self) -> Param:
+    def forward(self) -> None:
         """
         Defines the forward pass for the neural network model.
         """
 
-        for layer in self.layers:
-            layer.forward()
-
-        return self.layers[-1].output
-
-    def backward(self, loss_func: LossFunction, labels: NDArray):
-        """
-        Define the backward pass for the neural network
-        """
-
-        # Initialize parent layer
-        loss_func.backward()
-
-        current_layer = self.layers[-1]
-
-        # Continue the backward pass.
-        while current_layer is not None:
-            current_layer.backward()
-            current_layer = current_layer.parent_layer
+        self.output = self.layers[-1].output

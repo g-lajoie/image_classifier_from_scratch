@@ -12,8 +12,12 @@ class LossFunction:
     Interface for loss functions.
     """
 
+    # Make a concrete methods.
+    def forward(self):
+        pass
+
     @abstractmethod
-    def calculate(self, y_true: NDArray, *args, **kwargs):
+    def calculate(self, y_pred: NDArray, *args, **kwargs):
         """
         Abstract method, overwritten for loss functions.
         """

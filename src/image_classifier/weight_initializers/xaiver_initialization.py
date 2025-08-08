@@ -47,6 +47,6 @@ class XaiverInitMethod(WeightInitializationMethod):
         if not isinstance(X, Param):
             raise TypeError("Invalud type for X")
 
-        _in = X.shape[1]  # previous layer's units, or input features.
+        _in = X.value.shape[1]  # previous layer's units, or input features.
 
         return self.random.normal(0, (1 / _in), size=(_in, _out))

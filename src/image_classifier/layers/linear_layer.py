@@ -3,11 +3,13 @@ from types import NoneType
 from typing import Optional, cast
 
 import numpy as np
-from common.parameters import Param
 from numpy.typing import NDArray
 
 from image_classifier.common.parameters import Param
 from image_classifier.utils.matrix_calculation_helpers import reshape_for_matmul
+from image_classifier.weight_initializers.base_weight_initialization import (
+    WeightInitializationMethod,
+)
 
 from .base_layers import Layer
 
@@ -27,21 +29,30 @@ class LinearLayer(Layer):
 
     def __init__(
         self,
-        input: NDArray | Layer,
+        layer_input: NDArray | Layer,
         units: int,
+        label: str,
         *args,
         **kwargs,
     ):
-        if isinstance(input, np.ndarray):
-            self.input = Param(input, "input")
-            self.units = units
-
-        if isinstance(input, Layer):
-            self.input = input.output
-            self.units = units
-            self.parent_layer = input
+        super().__init__()
 
         # Layer Variables
+        self.layer_input = layer_input
+        self.units = units
+
+        if isinstance(self.layer_input, np.ndarray):
+            self.X: Param = Param(self.layer_input, "X")
+
+        if isinstance(self.layer_input, Layer):
+            self.parent_layer: Layer = self.layer_input
+
+            self.X: Param = Param(
+                np.zeros_like(self.parent_layer.X.value, dtype=np.float32),
+                label=f"X: {self.label}",
+            )
+
+        self.weight_init_method: Optional[WeightInitializationMethod] = None
         self.weights: Optional[Param] = None
         self.bias: Optional[Param] = None
 
@@ -50,71 +61,60 @@ class LinearLayer(Layer):
 
     @property
     def param_dict(self) -> dict[str, Param]:
-        if (self.weights is None) or (self.input is None) or (self.bias is None):
+        if (self.weights is None) or (self.X is None) or (self.bias is None):
             logger.error("The Weights, Input, or Bias parameters have not been set")
             raise ValueError("The variables: weights, _inp, or bias cannot be None")
 
-        return {"weights": self.weights, "X": self.input, "bias": self.bias}
+        return {"weights": self.weights, "X": self.X, "bias": self.bias}
 
-    def forward(self) -> None:
+    def forward(self) -> NDArray:
         """
         Calculates the Linear Layer, to be used in the forward pass.
         """
 
+        # Pre Calculation Parameters
         if self.weight_init_method is None:
-            logger.error("weight_init attribute is required")
-            raise
+            raise ValueError("weight_init attribute is required")
 
         if self.units is None:
-            logger.error("The output units must be set.")
-            raise
+            raise ValueError("The output units must be set.")
 
+        # Weights & Biases
         if self.weights is None:
             self.weights = Param(
-                self.weight_init_method.init_weights(self.input, self.units),
-                "Weight",
+                self.weight_init_method.init_weights(self.X, self.units),
+                f"Weight: {self.label}",
             )
 
         if self.bias is None:
-            self.bias = Param(np.zeros(self.weights.shape[-1]), "bias vector")
+            self.bias = Param(np.zeros(self.weights.shape[-1]), f"Bias: {self.label}")
 
-        self.output = np.dot(self.input, self.weights) + self.bias
+        if self.X.value.shape[-1] != self.weights.value.shape[0]:
+            ValueError(f"Dimension mismatch in Layer{self.label}")
 
-    def backward(self):
+        return self.X.value @ self.weights.value + np.asarray(self.bias.value)
+
+    def backward(self, previous_layer_grad: NDArray):
         """
         Deriviate of the linear layer w.r.t eac parameter
         """
 
         # Calculate the gradient
-        if (self.weights is None) or (self.input is None) or (self.bias is None):
+        if (self.weights is None) or (self.X is None) or (self.bias is None):
             logger.error(
-                "At least one of the parameters weights, bias, and input(X) is None."
+                "At least one of the parameters weights, bias, and X(X) is None."
             )
-            raise ValueError("The params weights, bias, and input cannot be None")
+            raise ValueError("The params weights, bias, and X cannot be None")
 
-        d_weights = self.input.value
-        d_input = self.weights.value
+        d_weights = self.X.value
+        d_X = self.weights.value
         d_bias = np.array(1)
 
-        # Type and Value Checks
-        if self.child_layer is None:
-            self.weights.grad = d_weights
-            self.input.grad = d_input
-            self.bias.grad = d_bias
+        # Update Grad
+        self.weights.grad = (
+            reshape_for_matmul(d_weights, previous_layer_grad) @ previous_layer_grad
+        )
+        self.X.grad = reshape_for_matmul(d_X, previous_layer_grad) @ previous_layer_grad
+        self.bias.grad = np.sum(d_bias, axis=0)
 
-        else:
-            # Partial Deriative of the child layer.
-            d_child_layer_grad = self.child_layer.input.grad
-
-            # Update Grad
-            self.weights.grad = (
-                reshape_for_matmul(d_weights, d_child_layer_grad) @ d_child_layer_grad
-            )
-            self.input.grad = (
-                reshape_for_matmul(d_input, d_child_layer_grad) @ d_child_layer_grad
-            )
-            self.bias.grad = np.sum(d_bias, axis=0)
-            self.input.grad = (
-                reshape_for_matmul(d_inp, d_child_layer_grad) @ d_child_layer_grad
-            )
-            self.bias.grad = np.sum(d_bias, axis=0)
+        return self.X.grad

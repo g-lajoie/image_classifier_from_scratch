@@ -41,5 +41,3 @@ class RandomInitMethod(WeightInitializationMethod):
         p = X.shape[1]  # Number of features.
 
         return self.random.standard_normal(size=(p, _out))
-
-        return self.random.standard_normal(size=(p, _out))

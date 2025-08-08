@@ -1,3 +1,3 @@
 from .cat_cross_entropy import CategoricalCrossEntropy
 
-__all__ = ["BCEWithLogits", "CatCrossEntropy"]
+__all__ = ["CategoricalCrossEntropy"]
