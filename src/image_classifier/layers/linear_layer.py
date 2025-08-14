@@ -72,23 +72,32 @@ class LinearLayer(Layer):
         Calculates the Linear Layer, to be used in the forward pass.
         """
 
-        # Pre Calculation Parameters
+        # Pre Calculation Parameter Check
         if self.weight_init_method is None:
             raise ValueError("weight_init attribute is required")
 
         if self.units is None:
             raise ValueError("The output units must be set.")
 
-        # Weights & Biases
+        # Intitialize Weights & Biases
         if self.weights is None:
             self.weights = Param(
                 self.weight_init_method.init_weights(self.X, self.units),
                 f"Weight: {self.label}",
+                grad=np.zeros_like(self.X.value),
             )
 
         if self.bias is None:
-            self.bias = Param(np.zeros(self.weights.shape[-1]), f"Bias: {self.label}")
+            self.bias = Param(
+                np.zeros(self.weights.shape[-1]),
+                f"Bias: {self.label}",
+                grad=np.ones((1, self.units), dtype=np.float32),
+            )
 
+        # Initialize Input Matrix Grad
+        self.X.grad = np.zeros_like(self.weights.value)
+
+        # Calcuations
         if self.X.value.shape[-1] != self.weights.value.shape[0]:
             ValueError(f"Dimension mismatch in Layer{self.label}")
 
@@ -106,15 +115,9 @@ class LinearLayer(Layer):
             )
             raise ValueError("The params weights, bias, and X cannot be None")
 
-        d_weights = self.X.value
-        d_X = self.weights.value
-        d_bias = np.array(1)
-
         # Update Grad
-        self.weights.grad = (
-            reshape_for_matmul(d_weights, previous_layer_grad) @ previous_layer_grad
-        )
-        self.X.grad = reshape_for_matmul(d_X, previous_layer_grad) @ previous_layer_grad
-        self.bias.grad = np.sum(d_bias, axis=0)
+        self.weights.grad = reshape_for_matmul(self.X.value, previous_layer_grad)
+        self.X.grad = reshape_for_matmul(self.X.value, previous_layer_grad)
+        self.bias.grad = np.sum(previous_layer_grad, axis=0, keepdims=True)
 
         return self.X.grad

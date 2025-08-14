@@ -32,4 +32,5 @@ def one_hot_encoding(data: NDArray, number_of_classes: int) -> np.ndarray:
         )
 
     one_hot = np.zeros((data.size, number_of_classes), dtype=np.float32)
-    return one_hot[np.arange(data.size), data]
+    one_hot[np.arange(data.size), data.astype(int)] = 1.0
+    return one_hot

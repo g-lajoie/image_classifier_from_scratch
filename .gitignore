@@ -113,6 +113,7 @@ Dockerfile.*
 pyspark_apps/
 pyspark_data_files/
 minio-data/
+scripts/
 scripts_private/
 
 # Make Files

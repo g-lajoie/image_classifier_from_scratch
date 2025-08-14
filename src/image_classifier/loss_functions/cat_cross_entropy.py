@@ -25,16 +25,19 @@ class CategoricalCrossEntropy(LossFunction):
     def param_dict(self, *args, **kwargs) -> dict[str, Param]:
         return {self.input.label: self.input}
 
-    def calculate(self) -> np.ndarray:
+    def calculate(self, labels: np.ndarray) -> np.ndarray:
         """
         Categorical Cross Entropy function.
         """
 
         logits = self.nn.output
+        N = logits.shape[0]
 
         # Calculations
         m = np.max(logits, axis=1, keepdims=True)
-        self.input.value = m + np.log(np.sum(np.exp(logits - m)))
+        cce = m + np.log(np.sum(np.exp(logits - m), axis=1, keepdims=True))
+        z_correct = logits[np.arange(N), labels.astype(np.int32)].reshape(-1, 1)
+        loss_per_sample = -(z_correct - cce)
 
         # Connecting to a parent layer
         self.parent_layer = self.nn.layers[-1]

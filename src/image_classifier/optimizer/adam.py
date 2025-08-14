@@ -25,6 +25,8 @@ class Adam(Optimizer):
     def step(self):
         self.m = {param: np.zeros_like(param.value) for param in self.model_parameters}
         self.v = {param: np.zeros_like(param.value) for param in self.model_parameters}
+        print(self.m)
+        print(self.v)
 
         self.t += 1
         for param in self.model_parameters:
@@ -38,6 +40,7 @@ class Adam(Optimizer):
             v_hat = self.v[param] / (1 - self.beta_2**self.t)
 
             param.value -= self.alpha * (m_hat / (v_hat + self.epsilon))
+            print(param.value)
 
     def zero_grad(self):
 

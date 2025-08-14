@@ -12,11 +12,13 @@ logger = logging.getLogger(__name__)
 
 class Param:
 
-    def __init__(self, value, label):
+    def __init__(self, value, label, grad: NDArray | None = None):
         # Define Variables
         self.value: NDArray = value
         self.label: str = label
-        self.grad: NDArray = np.zeros(self.value.shape, dtype=np.float32)
+        self.grad: NDArray = (
+            np.zeros(self.value.shape, dtype=np.float32) if grad is None else grad
+        )
 
     # Calculated Variables
     @property
