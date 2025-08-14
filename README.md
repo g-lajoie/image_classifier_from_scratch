@@ -29,4 +29,4 @@ The architecture is fully configurable in code, by default it consist of
 Uses ReLU for hidden layers and output raw logits. Uses the softmax with categorical cross entropy loss function to evaluate the model.
 
 ## Author
-Create by g-lajoie.
+Create by Ricky Lajoie.
