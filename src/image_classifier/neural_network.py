@@ -27,48 +27,50 @@ class NeuralNetwork:
         layers Sequence[Layers]: Layers for neural network. Layers will be evaluated in sequential order.
     """
 
-    def __init__(
-        self,
-        layers: list[Layer],
-        **kwargs,
-    ):
+    def __init__(self):
         # Layers
-        self.layers: list[Layer] = layers
-        self.output: NDArray[np.float32] = np.zeros_like(layers[-1].X.value)
-
-        # Initialize Weights
-        self._initialize_weight_init_methods()
-
-    def _initialize_weight_init_methods(self):
-
-        for i in range(len(self.layers)):
-            if i == 0:
-                pass
-
-            if isinstance(self.layers[i], RELU) and isinstance(
-                self.layers[i - 1], LinearLayer
-            ):
-                previous_layer = cast(LinearLayer, self.layers[i - 1])
-                previous_layer.weight_init_method = KassingInitMethod()
-
-            if i == len(self.layers) - 1 and isinstance(self.layers[-1], LinearLayer):
-                current_layer: Layer = self.layers[-1]
-                current_layer.weight_init_method = XaiverInitMethod()
+        self.l1 = LinearLayer(KassingInitMethod(), units=256, label="l1")
+        self.r1 = RELU(label="r1")
+        self.l2 = LinearLayer(XaiverInitMethod(), units=62, label="l2")
 
     @property
     def parameters(self):
+        """
+        Return the weights and bias that are associated with the neural network
+        """
+
         params = []
 
-        for i in range(0, len(self.layers) + 1, -1):
+        for i in [self.l1, self.l2]:
             if isinstance(i, LinearLayer):
                 params.append(i.weights)
                 params.append(i.bias)
 
         return params
 
-    def forward(self) -> None:
+    def forward(self, batch: np.ndarray):
         """
-        Defines the forward pass for the neural network model.
+        Forward pass of the neural network.
+        Returns the logits for the last layer of the neural network
+
+        Arguments:
+            batch: A numpy array that represents a batch of data.
         """
 
-        self.output = self.layers[-1].output
+        l1_logits = self.l1.forward(batch)
+        r1_logits = self.r1.forward(l1_logits)
+        l2_logits = self.l2.forward(r1_logits)
+
+        return l2_logits
+
+    def backward(self, loss_func_grad):
+        """
+        Calculates the gradients for the neural networks.
+
+        Agrugments:
+            loss_func_grad: A numpy array of the loss function gradients.
+        """
+
+        l2_grad = self.l2.backward(loss_func_grad)
+        r1_grad = self.r1.backward(l2_grad)
+        _ = self.l1.backward(r1_grad)

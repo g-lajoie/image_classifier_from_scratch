@@ -12,54 +12,36 @@ class CategoricalCrossEntropy(LossFunction):
     Categorical Cross Entropy
     """
 
-    def __init__(self, nn: NeuralNetwork):
-        self.input = Param(
-            np.zeros(nn.output.shape, dtype=np.float32), label="loss function"
-        )
-
-        self.nn = nn
-        self.logits: np.ndarray = self.nn.output
+    def __init__(self):
         self.y = np.zeros([1, 1], dtype=np.float32)
 
-    @property
-    def param_dict(self, *args, **kwargs) -> dict[str, Param]:
-        return {self.input.label: self.input}
-
-    def calculate(self, labels: np.ndarray) -> np.ndarray:
+    def calculate(self, logits: np.ndarray, labels: np.ndarray) -> np.ndarray:
         """
         Categorical Cross Entropy function.
         """
 
-        logits = self.nn.output
         N = logits.shape[0]
 
         # Calculations
         m = np.max(logits, axis=1, keepdims=True)
         cce = m + np.log(np.sum(np.exp(logits - m), axis=1, keepdims=True))
         z_correct = logits[np.arange(N), labels.astype(np.int32)].reshape(-1, 1)
-        loss_per_sample = -(z_correct - cce)
 
-        # Connecting to a parent layer
-        self.parent_layer = self.nn.layers[-1]
+        return -(z_correct - cce)
 
-        return self.input.value
-
-    def backward(self, y_true: np.ndarray):
+    def backward(self, logits: np.ndarray, y_true: np.ndarray):
         """
         Derivative for the Categorical Cross Entropy Function
         """
         # Calculate Gradient
-        self.input.grad = self.softmax(self.nn.output) - y_true
-
-        current_layer_grad = self.input.grad
-
-        while self.parent_layer:
-            self.parent_layer.backward(current_layer_grad)
-            current_layer_grad = self.parent_layer.X.grad
+        return self.softmax(logits) - y_true
 
     def softmax(self, logits: np.ndarray) -> np.ndarray:
         """
         Softmax function
         """
 
-        return np.exp(logits - np.max(logits)) / np.sum(np.exp(logits - np.max(logits)))
+        N = logits.shape[0]
+        m = np.max(logits, axis=1, keepdims=True)
+
+        return np.exp(logits - m) / np.sum(np.exp(logits - m))

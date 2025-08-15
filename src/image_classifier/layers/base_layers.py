@@ -71,14 +71,6 @@ class Layer(ABC):
         self._X = new_X
 
     @property
-    def output(self) -> NDArray:
-        """
-        The dependent (output) variable of the layer, computed by the forward method.
-        """
-
-        return self.forward()
-
-    @property
     def units(self) -> int:
         """
         Number of output units for this layer.
@@ -134,17 +126,6 @@ class Layer(ABC):
             raise TypeError("parent_layer must be a Layers instance")
 
         self._parent_layer = new_parent_layer_value
-
-    @property
-    @abstractmethod
-    def param_dict(self, *args, **kwargs) -> dict[str, Param]:
-        """
-        Abstract property.
-        Should return a dict of all variables (e.g., weights, biases) used in this layer.
-        """
-        raise NotImplementedError(
-            "The 'variables' property must be implemented by subclass."
-        )
 
     @abstractmethod
     def forward(self, *args, **kwargs) -> NDArray:

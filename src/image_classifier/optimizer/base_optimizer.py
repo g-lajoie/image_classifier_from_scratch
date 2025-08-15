@@ -8,25 +8,6 @@ class Optimizer:
     Interface for optimizer classes.
     """
 
-    @property
-    def model_parameters(self) -> list[Param]:
-        if self._model_parameters is None:
-            raise ValueError("The model parameter attribute must not be None")
-
-        return self._model_parameters
-
-    @model_parameters.setter
-    def model_parameters(self, new_model_params_value: list[Param]):
-        if not isinstance(new_model_params_value, list) and not all(
-            [True for param in new_model_params_value if isinstance(param, Param)]
-        ):
-
-            raise ValueError(
-                "The type for model params is incorrect. Expec ted list[Param]"
-            )
-
-        self._model_parameters = new_model_params_value
-
     @abstractmethod
     def step(self, *args, **kwargs):
         """

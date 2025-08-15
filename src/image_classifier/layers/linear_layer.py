@@ -29,7 +29,7 @@ class LinearLayer(Layer):
 
     def __init__(
         self,
-        layer_input: NDArray | Layer,
+        weight_init_method: WeightInitializationMethod,
         units: int,
         label: str,
         *args,
@@ -38,21 +38,10 @@ class LinearLayer(Layer):
         super().__init__()
 
         # Layer Variables
-        self.layer_input = layer_input
+
+        self.weight_init_method: WeightInitializationMethod = weight_init_method
         self.units = units
-
-        if isinstance(self.layer_input, np.ndarray):
-            self.X: Param = Param(self.layer_input, "X")
-
-        if isinstance(self.layer_input, Layer):
-            self.parent_layer: Layer = self.layer_input
-
-            self.X: Param = Param(
-                np.zeros_like(self.parent_layer.X.value, dtype=np.float32),
-                label=f"X: {self.label}",
-            )
-
-        self.weight_init_method: Optional[WeightInitializationMethod] = None
+        self.label = label
         self.weights: Optional[Param] = None
         self.bias: Optional[Param] = None
 
@@ -60,24 +49,20 @@ class LinearLayer(Layer):
         return f"LinearLayer {__name__} output_units:{self.units}"
 
     @property
-    def param_dict(self) -> dict[str, Param]:
-        if (self.weights is None) or (self.X is None) or (self.bias is None):
-            logger.error("The Weights, Input, or Bias parameters have not been set")
-            raise ValueError("The variables: weights, _inp, or bias cannot be None")
+    def param_dict(self) -> dict[str, Param | None]:
+        return {
+            f"{self.label}_weights": self.weights,
+            f"{self.label}_X": self.X,
+            f"{self.label}_bias": self.bias,
+        }
 
-        return {"weights": self.weights, "X": self.X, "bias": self.bias}
-
-    def forward(self) -> NDArray:
+    def forward(self, X: np.ndarray) -> NDArray:
         """
         Calculates the Linear Layer, to be used in the forward pass.
         """
 
-        # Pre Calculation Parameter Check
-        if self.weight_init_method is None:
-            raise ValueError("weight_init attribute is required")
-
-        if self.units is None:
-            raise ValueError("The output units must be set.")
+        if isinstance(X, np.ndarray):
+            self.X: Param = Param(X, "X")
 
         # Intitialize Weights & Biases
         if self.weights is None:
@@ -103,7 +88,7 @@ class LinearLayer(Layer):
 
         return self.X.value @ self.weights.value + np.asarray(self.bias.value)
 
-    def backward(self, previous_layer_grad: NDArray):
+    def backward(self, previous_layer_grad: NDArray) -> np.ndarray:
         """
         Deriviate of the linear layer w.r.t eac parameter
         """
@@ -121,3 +106,14 @@ class LinearLayer(Layer):
         self.bias.grad = np.sum(previous_layer_grad, axis=0, keepdims=True)
 
         return self.X.grad
+
+    def _zero_grad(self):
+
+        if self.X is None or self.weights is None or self.bias is None:
+            raise ValueError(
+                "The input (X), weights, and bias parameters cannot be None"
+            )
+
+        self.X.grad = np.zeros_like(self.X.grad)
+        self.weights.grad = np.zeros_like(self.X.grad)
+        self.bias.grad = np.zeros_like(self.X.grad)
