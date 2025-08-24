@@ -25,7 +25,8 @@ class Layer(ABC):
     def __init__(self):
         self._label = None
         self._X = None
-        self._units = None
+        self._in_features = None
+        self._out_features = None
         self._parent_layer = None
 
     @property
@@ -69,40 +70,6 @@ class Layer(ABC):
             )
 
         self._X = new_X
-
-    @property
-    def units(self) -> int:
-        """
-        Number of output units for this layer.
-        """
-        if self._units is None:
-            logger.error("Output units have not been defined.")
-            raise ValueError("output units is None")
-
-        return cast(int, self._units)
-
-    @units.setter
-    def units(self, num_of_units: int):
-        """
-        Sets the number of output units for the layer.
-        """
-        if isinstance(num_of_units, int):
-            self._units = num_of_units
-
-        elif isinstance(num_of_units, float):
-            self._units = int(num_of_units)
-
-        elif num_of_units is None:
-            logger.error("u_out cannot be None.")
-            raise ValueError("u_out is None")
-
-        else:
-            logger.error(
-                "Expected u_out as int or float, got <%s>",
-                type(num_of_units),
-                exc_info=True,
-            )
-            raise TypeError("u_out must be an int or float")
 
     @property
     def parent_layer(self) -> Optional["Layer"]:

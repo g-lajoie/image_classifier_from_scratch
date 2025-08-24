@@ -26,7 +26,7 @@ class KassingInitMethod(WeightInitializationMethod):
     def __repr__(self):
         return "KassingInitMethod"
 
-    def init_weights(self, X: Param, _out: int) -> NDArray:
+    def init_weights(self, _in: int, _out: int) -> NDArray[np.float64]:
         """
         Returns a scaled initialization using Kassiging He initialization methods.
         To be used when the acitivation function is RELU
@@ -43,7 +43,5 @@ class KassingInitMethod(WeightInitializationMethod):
             _out: int
         Return: NDArray
         """
-
-        _in = X.shape[1]  # previous layer's units, or input features.
 
         return self.random.normal(0, (2 / _in), size=(_in, _out))

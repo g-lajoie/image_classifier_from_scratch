@@ -19,7 +19,7 @@ class RandomInitMethod(WeightInitializationMethod):
     def __init__(self):
         self.random = np.random.Generator(PCG64())
 
-    def init_weights(self, X: Param, _out: int) -> NDArray:
+    def init_weights(self, _in: int, _out: int) -> NDArray[np.float64]:
         """
         Returns a random initialization of Weight Matrix(W). If X has dimensions (B,m), then W has dimensions(m,_out)
 
@@ -34,10 +34,5 @@ class RandomInitMethod(WeightInitializationMethod):
             _out: int
         Return: NDArray
         """
-        # Check for correct type
-        if not isinstance(X, Param):
-            raise TypeError("Invalud type for X")
 
-        p = X.shape[1]  # Number of features.
-
-        return self.random.standard_normal(size=(p, _out))
+        return self.random.standard_normal(size=(_in, _out))

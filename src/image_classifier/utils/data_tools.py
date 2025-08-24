@@ -13,15 +13,7 @@ def train_test_split(
     return data[:parition_index, :], data[parition_index + 1 :, :]
 
 
-def batch_data(data: NDArray, batch_size: int):
-    """
-    Batch data for training.
-    """
-
-    return [data[i : i + 1] for i in range(0, len(data), batch_size)]
-
-
-def one_hot_encoding(data: NDArray, number_of_classes: int) -> np.ndarray:
+def one_hot_encoding(data: NDArray, number_of_classes: int) -> NDArray:
     """
     One hot encode the data
     """

@@ -29,9 +29,19 @@ class NeuralNetwork:
 
     def __init__(self):
         # Layers
-        self.l1 = LinearLayer(KassingInitMethod(), units=256, label="l1")
+        self.l1 = LinearLayer(
+            KassingInitMethod(),
+            in_features=784,
+            out_features=256,
+            label="l1",
+        )
         self.r1 = RELU(label="r1")
-        self.l2 = LinearLayer(XaiverInitMethod(), units=62, label="l2")
+        self.l2 = LinearLayer(
+            XaiverInitMethod(),
+            in_features=256,
+            out_features=62,
+            label="l2",
+        )
 
     @property
     def parameters(self):

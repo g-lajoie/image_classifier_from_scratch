@@ -12,23 +12,31 @@ logger = logging.getLogger(__name__)
 
 class Param:
 
-    def __init__(self, value, label, grad: NDArray | None = None):
+    def __init__(self, value, label, grad: NDArray[np.float64], shape: tuple[int, ...]):
         # Define Variables
-        self.value: NDArray = value
+        self._value: NDArray[np.float64] = value
         self.label: str = label
-        self.grad: NDArray = (
-            np.zeros(self.value.shape, dtype=np.float32) if grad is None else grad
-        )
+        self._grad: NDArray[np.float64] = grad
+        self.shape: tuple[int, ...] = shape
 
-    # Calculated Variables
     @property
-    def shape(self) -> tuple[int, ...]:
-        if self.value is None:
-            raise ValueError("Param value is None")
+    def value(self):
+        if self._value.shape != self.shape:
+            raise ValueError(f"Possible mismatch in shape in {self.label}")
 
-        if not isinstance(self.value, np.ndarray):
-            raise TypeError(
-                f"Incorrect type for value, expected NDArray, got {type(self.value).__name__}"
-            )
+        return self._value
 
-        return self.value.shape
+    @value.setter
+    def value(self, new_value: NDArray[np.float64]):
+        self._value = new_value
+
+    @property
+    def grad(self):
+        if self._grad.shape != self.shape:
+            raise ValueError(f"Possible mistmatch in shape in {self.label}")
+
+        return self._grad
+
+    @grad.setter
+    def grad(self, new_grad: NDArray[np.float64]):
+        self._grad = new_grad

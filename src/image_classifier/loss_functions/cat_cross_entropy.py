@@ -15,7 +15,7 @@ class CategoricalCrossEntropy(LossFunction):
     def __init__(self):
         self.y = np.zeros([1, 1], dtype=np.float32)
 
-    def calculate(self, logits: np.ndarray, labels: np.ndarray) -> np.ndarray:
+    def calculate(self, logits: np.ndarray, labels: np.ndarray) -> float:
         """
         Categorical Cross Entropy function.
         """
@@ -24,10 +24,12 @@ class CategoricalCrossEntropy(LossFunction):
 
         # Calculations
         m = np.max(logits, axis=1, keepdims=True)
-        cce = m + np.log(np.sum(np.exp(logits - m), axis=1, keepdims=True))
-        z_correct = logits[np.arange(N), labels.astype(np.int32)].reshape(-1, 1)
+        log_sum_exp = m + np.log(np.sum(np.exp(logits - m), axis=1, keepdims=True))
 
-        return -(z_correct - cce)
+        correct_logit = np.sum(labels * logits, axis=1, keepdims=True)
+
+        loss_per_sample = -correct_logit + log_sum_exp
+        return float(loss_per_sample.mean())
 
     def backward(self, logits: np.ndarray, y_true: np.ndarray):
         """
@@ -44,4 +46,4 @@ class CategoricalCrossEntropy(LossFunction):
         N = logits.shape[0]
         m = np.max(logits, axis=1, keepdims=True)
 
-        return np.exp(logits - m) / np.sum(np.exp(logits - m))
+        return np.exp(logits - m) / np.sum(np.exp(logits - m), axis=1, keepdims=True)

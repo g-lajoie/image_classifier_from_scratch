@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class WeightInitializationMethod(ABC):
 
     @abstractmethod
-    def init_weights(self, X: Param, _out: int) -> NDArray:
+    def init_weights(self, _in: int, _out: int) -> NDArray[np.float64]:
         """
         Arguments
             X: Variable

@@ -14,47 +14,20 @@ class Adam(Optimizer):
     The ADAM optimizer.
     """
 
-    def __init__(self):
+    def __init__(self, parameters: list[Param]):
+
+        self.model_parameters = parameters
 
         self.beta_1: float = 0.9
         self.beta_2: float = 0.999
-        self.alpha: float = 0.01
+        self.alpha: float = 0.001
         self.epsilon: float = 1e-8
         self.t = 0
 
-    @property
-    def model_parameters(self) -> list[Param]:
-        """
-        Property that defines the model parameteres
-        """
-        if self._model_parameters is None:
-            pass
-
-        return self._model_parameters
-
-    @model_parameters.setter
-    def model_parmaeters(self, linear_layers: list[LinearLayer]):
-        """
-        Helper function that assigns the parameters to the optimizer
-        """
-
-        parameters: list[Param | None] = [
-            value for layer in linear_layers for value in layer.param_dict.values()
-        ]
-
-        if not all(isinstance(p, Param) for p in parameters):
-            raise ValueError("All model parameters must be non-None and of type Param")
-
-        self._model_parameters: list[Param] = [
-            p for p in parameters if isinstance(p, Param)
-        ]
+        self.m = {param: np.zeros_like(param.grad) for param in self.model_parameters}
+        self.v = {param: np.zeros_like(param.grad) for param in self.model_parameters}
 
     def step(self):
-
-        self.m = {param: np.zeros_like(param.value) for param in self.model_parameters}
-        self.v = {param: np.zeros_like(param.value) for param in self.model_parameters}
-        print(self.m)
-        print(self.v)
 
         self.t += 1
         for param in self.model_parameters:
@@ -67,8 +40,8 @@ class Adam(Optimizer):
             m_hat = self.m[param] / (1 - self.beta_1**self.t)
             v_hat = self.v[param] / (1 - self.beta_2**self.t)
 
-            param.value -= self.alpha * (m_hat / (v_hat + self.epsilon))
-            print(param.value)
+            # Update parameters
+            param.value -= self.alpha * (m_hat / (np.sqrt(v_hat) + self.epsilon))
 
     def zero_grad(self):
 

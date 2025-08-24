@@ -108,6 +108,7 @@ notebooks/
 docker-compose.yml
 Dockerfile
 Dockerfile.*
+.devcontainer/
 
 # Other
 pyspark_apps/
@@ -118,3 +119,6 @@ scripts_private/
 
 # Make Files
 makefile
+
+# Weight and Biases
+wandb/

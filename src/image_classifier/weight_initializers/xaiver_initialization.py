@@ -26,7 +26,7 @@ class XaiverInitMethod(WeightInitializationMethod):
         """
         self.random = np.random.Generator(PCG64())
 
-    def init_weights(self, X: Param, _out: int) -> NDArray:
+    def init_weights(self, _in: int, _out: int) -> NDArray[np.float64]:
         """
         Returns a scaled initialization using He initialization methods.
 
@@ -42,11 +42,5 @@ class XaiverInitMethod(WeightInitializationMethod):
             _out: int
         Return: NDArray
         """
-
-        # Check for correct type
-        if not isinstance(X, Param):
-            raise TypeError("Invalud type for X")
-
-        _in = X.value.shape[1]  # previous layer's units, or input features.
 
         return self.random.normal(0, (1 / _in), size=(_in, _out))

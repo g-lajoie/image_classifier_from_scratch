@@ -21,16 +21,17 @@ class LinearLayer(Layer):
     The linear (dense) layer of a neural network
 
     Attributes:
-        data: Either initial data or data from previous layers.
-        activation_function: Activation function for linear layer.
         weight_init: Weight Initalizer [Xavier, He] for Weights Matrix initialization.
-        u_out [Optional]: Number of untis the layer will output
+        u_out: Number of untis the layer will output
+        label: Label for layer of neural network
+        shape: Shape of the input.
     """
 
     def __init__(
         self,
         weight_init_method: WeightInitializationMethod,
-        units: int,
+        in_features: int,
+        out_features: int,
         label: str,
         *args,
         **kwargs,
@@ -40,21 +41,31 @@ class LinearLayer(Layer):
         # Layer Variables
 
         self.weight_init_method: WeightInitializationMethod = weight_init_method
-        self.units = units
+        self.in_features = in_features
+        self.out_features = out_features
         self.label = label
-        self.weights: Optional[Param] = None
-        self.bias: Optional[Param] = None
+
+        # Intialize Weights and Bias
+        weights_initializer = self.weight_init_method.init_weights(
+            in_features, out_features
+        )
+
+        self.weights: Param = Param(
+            weights_initializer,
+            f"Weight: {self.label}",
+            np.zeros([in_features, out_features]),
+            (in_features, out_features),
+        )
+
+        self.bias: Param = Param(
+            np.ones((1, out_features), dtype=np.float64),
+            f"Bias: {self.label}",
+            np.ones((1, out_features), dtype=np.float64),
+            (1, out_features),
+        )
 
     def __repr__(self):
-        return f"LinearLayer {__name__} output_units:{self.units}"
-
-    @property
-    def param_dict(self) -> dict[str, Param | None]:
-        return {
-            f"{self.label}_weights": self.weights,
-            f"{self.label}_X": self.X,
-            f"{self.label}_bias": self.bias,
-        }
+        return f"LinearLayer {__name__}: {self.label}"
 
     def forward(self, X: np.ndarray) -> NDArray:
         """
@@ -62,28 +73,12 @@ class LinearLayer(Layer):
         """
 
         if isinstance(X, np.ndarray):
-            self.X: Param = Param(X, "X")
-
-        # Intitialize Weights & Biases
-        if self.weights is None:
-            self.weights = Param(
-                self.weight_init_method.init_weights(self.X, self.units),
-                f"Weight: {self.label}",
-                grad=np.zeros_like(self.X.value),
+            self.X: Param = Param(
+                X, "X", np.zeros_like(X), shape=(X.shape[0], X.shape[1])
             )
-
-        if self.bias is None:
-            self.bias = Param(
-                np.zeros(self.weights.shape[-1]),
-                f"Bias: {self.label}",
-                grad=np.ones((1, self.units), dtype=np.float32),
-            )
-
-        # Initialize Input Matrix Grad
-        self.X.grad = np.zeros_like(self.weights.value)
 
         # Calcuations
-        if self.X.value.shape[-1] != self.weights.value.shape[0]:
+        if self.X.value.shape[1] != self.weights.value.shape[0]:
             ValueError(f"Dimension mismatch in Layer{self.label}")
 
         return self.X.value @ self.weights.value + np.asarray(self.bias.value)
@@ -101,8 +96,8 @@ class LinearLayer(Layer):
             raise ValueError("The params weights, bias, and X cannot be None")
 
         # Update Grad
-        self.weights.grad = reshape_for_matmul(self.X.value, previous_layer_grad)
-        self.X.grad = reshape_for_matmul(self.X.value, previous_layer_grad)
+        self.weights.grad = np.transpose(self.X.value) @ previous_layer_grad
+        self.X.grad = previous_layer_grad @ np.transpose(self.weights.value)
         self.bias.grad = np.sum(previous_layer_grad, axis=0, keepdims=True)
 
         return self.X.grad
